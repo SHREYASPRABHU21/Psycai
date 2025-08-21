@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Layout from '@/components/layout/Layout'
 import Link from 'next/link'
 import { getBlogs, getBlogCategories } from '@/lib/blog'
@@ -11,14 +12,28 @@ export default function BlogPage() {
   const [blogs, setBlogs] = useState<Blog[]>([])
   const [categories, setCategories] = useState<BlogCategory[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string>('')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('')
+  const [mounted, setMounted] = useState(false)
+  const router = useRouter()
 
-  // Load data
+  // Ensure component is mounted before doing anything
   useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Load data whenever filters change
+  useEffect(() => {
+    if (!mounted) return
+
     const loadData = async () => {
       setIsLoading(true)
+      setError('')
+      
       try {
+        console.log('🔍 Blog page: Loading data...')
+        
         const [blogsResult, categoriesResult] = await Promise.all([
           getBlogs({ 
             published: true,
@@ -28,17 +43,31 @@ export default function BlogPage() {
           getBlogCategories()
         ])
 
-        if (blogsResult.data) setBlogs(blogsResult.data)
-        if (categoriesResult.data) setCategories(categoriesResult.data)
+        console.log('🔍 Blog page: Data loaded', {
+          blogsCount: blogsResult.data?.length || 0,
+          categoriesCount: categoriesResult.data?.length || 0
+        })
+
+        if (blogsResult.data) {
+          setBlogs(blogsResult.data)
+        }
+        
+        if (categoriesResult.data) {
+          setCategories(categoriesResult.data)
+        }
+
       } catch (error) {
-        console.error('Error loading blogs:', error)
+        console.error('🔍 Blog page: Error loading data', error)
+        setError(error instanceof Error ? error.message : 'Failed to load blog data')
       } finally {
         setIsLoading(false)
       }
     }
 
-    loadData()
-  }, [searchQuery, selectedCategory])
+    // Add small delay to ensure proper mounting
+    const timeoutId = setTimeout(loadData, 100)
+    return () => clearTimeout(timeoutId)
+  }, [mounted, searchQuery, selectedCategory])
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -46,6 +75,48 @@ export default function BlogPage() {
       month: 'long',
       day: 'numeric'
     })
+  }
+
+  // Don't render until mounted
+  if (!mounted) {
+    return (
+      <Layout>
+        <div className="min-h-screen bg-gradient-to-br from-background via-surface to-primary/5 flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-text/60">Initializing...</p>
+          </div>
+        </div>
+      </Layout>
+    )
+  }
+
+  if (error) {
+    return (
+      <Layout>
+        <div className="min-h-screen bg-gradient-to-br from-background via-surface to-primary/5 flex items-center justify-center">
+          <div className="text-center max-w-md px-4">
+            <div className="text-6xl mb-4">⚠️</div>
+            <h2 className="text-2xl font-bold text-text mb-4">Error Loading Blog</h2>
+            <p className="text-text/60 mb-6">{error}</p>
+            <div className="space-y-2">
+              <button
+                onClick={() => window.location.reload()}
+                className="w-full bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors"
+              >
+                Reload Page
+              </button>
+              <button
+                onClick={() => router.push('/')}
+                className="w-full border border-primary text-primary px-4 py-2 rounded-lg hover:bg-primary/10 transition-colors"
+              >
+                Go Home
+              </button>
+            </div>
+          </div>
+        </div>
+      </Layout>
+    )
   }
 
   if (isLoading) {

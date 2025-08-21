@@ -41,7 +41,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
   const blog = blogResult.data
   const categories = categoriesResult.data || []
-  const categoryObj = categories.find(c => c.slug === blog.category)
+  const categoryObj = categories.find((c: { slug: any }) => c.slug === blog.category)
 
   return (
     <Layout>

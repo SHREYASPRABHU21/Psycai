@@ -9,20 +9,44 @@ import { Blog, BlogCategory } from '@/types/blog'
 import { Plus, Edit, Trash2, Eye, Search, Filter, Calendar } from 'lucide-react'
 
 export default function AdminBlogsPage() {
-  const { user, loading } = useAuth()
+  const { user, loading: authLoading, isClient } = useAuth()
   const router = useRouter()
   const [blogs, setBlogs] = useState<Blog[]>([])
   const [categories, setCategories] = useState<BlogCategory[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string>('')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('')
   const [showPublished, setShowPublished] = useState<'all' | 'published' | 'drafts'>('all')
+  const [mounted, setMounted] = useState(false)
 
-  // Load data
+  // Ensure component is mounted
   useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Redirect if not authenticated (only after mounting and auth is ready)
+  useEffect(() => {
+    if (!mounted || authLoading || !isClient) return
+    
+    if (!user) {
+      console.log('🔍 Admin: User not authenticated, redirecting...')
+      router.push('/login')
+      return
+    }
+  }, [mounted, authLoading, user, isClient, router])
+
+  // Load data when user is ready and filters change
+  useEffect(() => {
+    if (!mounted || authLoading || !user || !isClient) return
+
     const loadData = async () => {
       setIsLoading(true)
+      setError('')
+      
       try {
+        console.log('🔍 Admin: Loading data...', { searchQuery, selectedCategory, showPublished })
+        
         const [blogsResult, categoriesResult] = await Promise.all([
           getBlogs({ 
             search: searchQuery || undefined,
@@ -32,23 +56,31 @@ export default function AdminBlogsPage() {
           getBlogCategories()
         ])
 
-        if (blogsResult.data) setBlogs(blogsResult.data)
-        if (categoriesResult.data) setCategories(categoriesResult.data)
+        console.log('🔍 Admin: Data loaded', {
+          blogsCount: blogsResult.data?.length || 0,
+          categoriesCount: categoriesResult.data?.length || 0
+        })
+
+        if (blogsResult.data) {
+          setBlogs(blogsResult.data)
+        }
+        
+        if (categoriesResult.data) {
+          setCategories(categoriesResult.data)
+        }
+
       } catch (error) {
-        console.error('Error loading blogs:', error)
+        console.error('🔍 Admin: Error loading data', error)
+        setError(error instanceof Error ? error.message : 'Failed to load admin data')
       } finally {
         setIsLoading(false)
       }
     }
 
-    if (user) loadData()
-  }, [user, searchQuery, selectedCategory, showPublished])
-
-  // Redirect if not authenticated
-  if (!loading && !user) {
-    router.push('/login')
-    return null
-  }
+    // Add small delay to ensure proper mounting
+    const timeoutId = setTimeout(loadData, 100)
+    return () => clearTimeout(timeoutId)
+  }, [mounted, authLoading, user, isClient, searchQuery, selectedCategory, showPublished])
 
   const handleDelete = async (id: string, title: string) => {
     if (!confirm(`Are you sure you want to delete "${title}"?`)) return
@@ -69,13 +101,69 @@ export default function AdminBlogsPage() {
     })
   }
 
-  if (loading || isLoading) {
+  // Don't render until mounted and auth is checked
+  if (!mounted || authLoading) {
     return (
       <Layout>
         <div className="min-h-screen bg-gradient-to-br from-background via-surface to-primary/5 flex items-center justify-center">
           <div className="text-center">
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-text/60">Loading blogs...</p>
+            <p className="text-text/60">Checking authentication...</p>
+          </div>
+        </div>
+      </Layout>
+    )
+  }
+
+  // User not authenticated - will redirect
+  if (!user) {
+    return (
+      <Layout>
+        <div className="min-h-screen bg-gradient-to-br from-background via-surface to-primary/5 flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-text/60">Redirecting to login...</p>
+          </div>
+        </div>
+      </Layout>
+    )
+  }
+
+  if (error) {
+    return (
+      <Layout>
+        <div className="min-h-screen bg-gradient-to-br from-background via-surface to-primary/5 flex items-center justify-center">
+          <div className="text-center max-w-md px-4">
+            <div className="text-6xl mb-4">⚠️</div>
+            <h2 className="text-2xl font-bold text-text mb-4">Error Loading Admin</h2>
+            <p className="text-text/60 mb-6">{error}</p>
+            <div className="space-y-2">
+              <button
+                onClick={() => window.location.reload()}
+                className="w-full bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors"
+              >
+                Reload Page
+              </button>
+              <button
+                onClick={() => router.push('/tools')}
+                className="w-full border border-primary text-primary px-4 py-2 rounded-lg hover:bg-primary/10 transition-colors"
+              >
+                Go to Tools
+              </button>
+            </div>
+          </div>
+        </div>
+      </Layout>
+    )
+  }
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="min-h-screen bg-gradient-to-br from-background via-surface to-primary/5 flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-text/60">Loading admin panel...</p>
           </div>
         </div>
       </Layout>
