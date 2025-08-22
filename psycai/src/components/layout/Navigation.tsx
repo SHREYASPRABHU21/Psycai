@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import UserProfile from '@/components/auth/UserProfile'
 import Logo from '@/components/brand/Logo'
-import { Menu, X, Sparkles } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
 
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
@@ -26,10 +26,10 @@ export default function Navigation() {
   }, [])
 
   const navigationItems = [
-    { href: '/', label: 'Platform', showWhenLoggedOut: true },
-    { href: '/tools', label: 'Solutions', requiresAuth: true },
-    { href: '/blog', label: 'Insights', showWhenLoggedOut: true },
-    { href: '/pricing', label: 'Pricing', showWhenLoggedOut: true },
+    { href: '/', label: 'Home', showWhenLoggedOut: true },
+    { href: '/tools', label: 'Tools', requiresAuth: true },
+    { href: '/blog', label: 'Blog', showWhenLoggedOut: true },
+    { href: '/contact', label: 'Contact', showWhenLoggedOut: true },
     { href: '/admin/blogs', label: 'Admin', requiresAuth: true },
   ]
 
@@ -45,23 +45,21 @@ export default function Navigation() {
   })
 
   if (!mounted || !isClient) {
-    return (
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? 'bg-paper/95 backdrop-blur-xl border-b border-mist' : 'bg-transparent'
-      }`}>
-        <div className="container mx-auto px-6">
-          <div className="flex justify-between items-center h-20">
-            <Logo size="md" />
-            <div className="w-20 h-8 bg-mist rounded animate-pulse" />
-          </div>
-        </div>
-      </nav>
-    )
+    return null
   }
 
+  // Only show overlay navigation on home page
+  const isHomePage = pathname === '/'
+  
+  if (isHomePage) {
+    // Navigation is handled within the home page component
+    return null
+  }
+
+  // Regular navigation for other pages
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      scrolled ? 'bg-paper/95 backdrop-blur-xl border-b border-mist shadow-gentle' : 'bg-transparent'
+      scrolled ? 'bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-lg' : 'bg-white border-b border-gray-200'
     }`}>
       <div className="container mx-auto px-6">
         <div className="flex justify-between items-center h-20">
@@ -74,15 +72,15 @@ export default function Navigation() {
                 <a
                   key={item.href}
                   href={item.href}
-                  className={`text-body font-medium transition-all duration-300 relative ${
+                  className={`text-sm font-medium transition-colors relative ${
                     isActive(item.href)
-                      ? 'text-infinity'
-                      : 'text-slate hover:text-infinity'
+                      ? 'text-purple-600'
+                      : 'text-gray-600 hover:text-purple-600'
                   }`}
                 >
                   {item.label}
                   {isActive(item.href) && (
-                    <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-infinity rounded-full" />
+                    <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-purple-600 rounded-full" />
                   )}
                 </a>
               ))}
@@ -90,23 +88,22 @@ export default function Navigation() {
 
             <div className="flex items-center space-x-4">
               {loading ? (
-                <div className="w-10 h-10 bg-mist rounded-full animate-pulse" />
+                <div className="w-10 h-10 bg-gray-200 rounded-full animate-pulse" />
               ) : user ? (
                 <UserProfile />
               ) : (
                 <div className="flex items-center space-x-3">
                   <a
                     href="/login"
-                    className="text-body font-medium text-slate hover:text-infinity transition-colors"
+                    className="text-sm font-medium text-gray-600 hover:text-purple-600 transition-colors"
                   >
                     Sign In
                   </a>
                   <a
                     href="/signup"
-                    className="btn-infinity text-sm"
+                    className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors"
                   >
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    Start Free Trial
+                    Get Started
                   </a>
                 </div>
               )}
@@ -118,7 +115,7 @@ export default function Navigation() {
             {user && !loading && <UserProfile />}
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="p-2 rounded-xl hover:bg-snow transition-colors"
+              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
             >
               {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -127,17 +124,17 @@ export default function Navigation() {
 
         {/* Mobile Navigation */}
         {isOpen && (
-          <div className="lg:hidden py-6 border-t border-mist bg-paper/95 backdrop-blur-xl">
+          <div className="lg:hidden py-6 border-t border-gray-200 bg-white/95 backdrop-blur-xl">
             <div className="space-y-4">
               {filteredItems.map((item) => (
                 <a
                   key={item.href}
                   href={item.href}
                   onClick={() => setIsOpen(false)}
-                  className={`block px-4 py-3 rounded-xl text-body font-medium transition-all ${
+                  className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                     isActive(item.href)
-                      ? 'text-infinity bg-infinity/10'
-                      : 'text-slate hover:text-infinity hover:bg-snow'
+                      ? 'text-purple-600 bg-purple-50'
+                      : 'text-gray-600 hover:text-purple-600 hover:bg-gray-50'
                   }`}
                 >
                   {item.label}
@@ -145,20 +142,20 @@ export default function Navigation() {
               ))}
               
               {!loading && !user && (
-                <div className="pt-4 border-t border-mist space-y-3">
+                <div className="pt-4 border-t border-gray-200 space-y-3">
                   <a
                     href="/login"
                     onClick={() => setIsOpen(false)}
-                    className="block px-4 py-3 text-body font-medium text-slate hover:text-infinity hover:bg-snow rounded-xl transition-all"
+                    className="block px-4 py-3 text-sm font-medium text-gray-600 hover:text-purple-600 hover:bg-gray-50 rounded-lg transition-colors"
                   >
                     Sign In
                   </a>
                   <a
                     href="/signup"
                     onClick={() => setIsOpen(false)}
-                    className="btn-infinity w-full text-center"
+                    className="block px-4 py-3 bg-purple-600 text-white text-center rounded-lg font-medium hover:bg-purple-700 transition-colors"
                   >
-                    Start Free Trial
+                    Get Started
                   </a>
                 </div>
               )}

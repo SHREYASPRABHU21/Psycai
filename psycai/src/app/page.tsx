@@ -3,366 +3,286 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import Layout from '@/components/layout/Layout'
-import { 
-  ArrowUpRight, 
-  Sparkles, 
-  Code2, 
-  Zap, 
-  Users,
-  TrendingUp,
-  Play,
-  Shield,
-  BookOpen,
-  Layers,
-  Brain,
-  Infinity,
-  TreePine
-} from 'lucide-react'
+import UserProfile from '@/components/auth/UserProfile'
+import { ArrowRight, Sparkles, CheckCircle, Calendar, Clock } from 'lucide-react'
+import Link from 'next/link'
 
-export default function Home() {
+export default function HomePage() {
   const { user, loading } = useAuth()
-  const [currentFeatureIndex, setCurrentFeatureIndex] = useState(0)
-
-  const showcaseFeatures = [
-    { name: 'Smart Content Generator', status: 'Live', users: '12.8K+' },
-    { name: 'AI Code Reviewer', status: 'Beta', users: '5.2K+' },
-    { name: 'Voice Synthesis Engine', status: 'Coming Soon', users: 'Preview' },
-  ]
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentFeatureIndex((prev) => (prev + 1) % showcaseFeatures.length)
-    }, 3000)
-    return () => clearInterval(interval)
-  }, [showcaseFeatures.length])
+    setMounted(true)
+  }, [])
 
-  const features = [
+  // Sample featured tools data
+  const featuredTools = [
     {
-      icon: <Brain className="w-8 h-8" />,
-      title: 'Enterprise-Grade AI',
-      description: 'Built with scalability and security in mind. Our tools handle enterprise workloads while maintaining exceptional performance and reliability.'
+      id: 1,
+      name: 'Smart Writer',
+      year: '2024',
+      image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+      description: 'AI-powered content creation for blogs and marketing',
     },
     {
-      icon: <Infinity className="w-8 h-8" />,
-      title: 'Limitless Integration',
-      description: 'Seamlessly integrate with your existing workflows. Our API-first approach ensures compatibility with your current tech stack.'
-    },
-    {
-      icon: <TreePine className="w-8 h-8" />,
-      title: 'Continuous Innovation',
-      description: 'We constantly evolve our platform based on user feedback and cutting-edge AI research. Your tools get better every day.'
+      id: 2,
+      name: 'Code Reviewer',
+      year: '2024',
+      image: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+      description: 'Intelligent code analysis and optimization',
     },
   ]
 
+  // Sample featured blogs data
+  const featuredBlogs = [
+    {
+      id: 1,
+      title: 'Getting Started with AI Tools',
+      image: 'https://images.unsplash.com/photo-1555949963-aa79dcee981c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      date: 'Dec 15, 2024',
+      readTime: '5 min',
+    },
+    {
+      id: 2,
+      title: 'Best Practices for AI Integration',
+      image: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      date: 'Dec 10, 2024',
+      readTime: '7 min',
+    },
+    {
+      id: 3,
+      title: 'Exploring New Possibilities',
+      image: 'https://images.unsplash.com/photo-1518186285589-2f7649de83e0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      date: 'Dec 5, 2024',
+      readTime: '6 min',
+    },
+  ]
+
+  if (!mounted) return null
+
   return (
-    <Layout>
-      <div className="min-h-screen">
-        
-        {/* Hero Section */}
-        <section className="relative min-h-screen flex items-center overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-organic opacity-20" />
-          
-          <div className="container mx-auto px-6 py-32 relative">
-            <div className="grid lg:grid-cols-12 gap-16 items-center">
-              
-              {/* Left Column */}
-              <div className="lg:col-span-7 space-y-12">
-                <div className="space-y-8">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-16 h-16 bg-gradient-infinity rounded-full flex items-center justify-center pulse-glow">
-                      <Sparkles className="w-8 h-8 text-white" />
-                    </div>
-                    <div>
-                      <span className="text-label text-stone">Welcome to</span>
-                      <div className="text-title infinity-gradient font-bold">PsycAi Platform</div>
-                    </div>
-                  </div>
-                  
-                  <h1 className="text-hero">
-                    Where <span className="infinity-gradient">AI Innovation</span>
-                    <br />
-                    Takes <span className="growth-gradient">Flight</span>
-                  </h1>
-                  
-                  <p className="text-body-lg text-slate max-w-2xl leading-relaxed">
-                    PsycAi is where cutting-edge artificial intelligence meets practical business solutions. 
-                    We craft intelligent tools that empower teams, accelerate workflows, and unlock 
-                    new possibilities in the digital landscape.
-                  </p>
-                </div>
+    <Layout showNav={false} showFooter={true}>
+      {/* Hero Section */}
+      <section className="min-h-screen bg-gradient-to-br from-violet-900 via-purple-800 to-indigo-900 text-white relative overflow-hidden">
+        {/* Background Gradient and Decorations */}
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-violet-600/20 via-purple-600/10 to-indigo-600/15" />
+          <div className="absolute top-0 right-0 w-96 h-96 opacity-20">
+            <div className="absolute top-20 right-20 w-px h-64 bg-gradient-to-b from-violet-400 to-transparent rotate-45" />
+            <div className="absolute top-40 right-10 w-px h-48 bg-gradient-to-b from-purple-400 to-transparent rotate-12" />
+          </div>
+        </div>
 
-                <div className="flex flex-wrap gap-6">
-                  {user ? (
-                    <>
-                      <a href="/tools" className="btn-infinity">
-                        <Zap className="w-5 h-5 mr-2" />
-                        Access Platform
-                      </a>
-                      <a href="/blog" className="btn-growth">
-                        <BookOpen className="w-5 h-5 mr-2" />
-                        Read Insights
-                      </a>
-                    </>
-                  ) : (
-                    <>
-                      <a href="/signup" className="btn-infinity">
-                        <Sparkles className="w-5 h-5 mr-2" />
-                        Start Free Trial
-                      </a>
-                      <a href="/tools" className="btn-growth">
-                        <Play className="w-5 h-5 mr-2" />
-                        View Solutions
-                      </a>
-                    </>
-                  )}
-                </div>
+        {/* Navigation */}
+        <nav className="relative z-50 container mx-auto px-6 py-4">
+          <div className="flex justify-between items-center">
+            {/* Text logo aligned with content */}
+            <Link href="/" className="text-3xl font-extrabold tracking-wide text-white ml-40 hover:text-violet-300 transition-colors">
+              PsycAi
+            </Link>
 
-                {/* Stats */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 pt-8">
-                  <div className="text-center lg:text-left">
-                    <div className="text-display infinity-gradient font-bold mb-2">25K+</div>
-                    <div className="text-caption text-stone">Active Users</div>
-                  </div>
-                  <div className="text-center lg:text-left">
-                    <div className="text-display growth-gradient font-bold mb-2">12+</div>
-                    <div className="text-caption text-stone">AI Tools</div>
-                  </div>
-                  <div className="text-center lg:text-left">
-                    <div className="text-display infinity-gradient font-bold mb-2">99.9%</div>
-                    <div className="text-caption text-stone">Uptime</div>
-                  </div>
-                  <div className="text-center lg:text-left">
-                    <div className="text-display growth-gradient font-bold mb-2">24/7</div>
-                    <div className="text-caption text-stone">Support</div>
+            <div className="hidden md:flex items-center space-x-8">
+              <Link href="/" className="text-white/80 hover:text-white text-sm font-medium">
+                Home
+              </Link>
+              <Link href="/tools" className="text-white/80 hover:text-white text-sm font-medium">
+                Tools
+              </Link>
+              <Link href="/blog" className="text-white/80 hover:text-white text-sm font-medium">
+                Blog
+              </Link>
+              <Link href="/contact" className="text-white/80 hover:text-white text-sm font-medium">
+                Contact
+              </Link>
+            </div>
+
+            <div className="hidden md:block">
+              {loading ? (
+                <div className="w-10 h-10 bg-white/10 rounded-full animate-pulse" />
+              ) : user ? (
+                <UserProfile />
+              ) : (
+                <div className="flex items-center space-x-3">
+                  <Link 
+                    href="/login" 
+                    className="px-4 py-2 text-white/80 hover:text-white text-sm font-medium transition-colors"
+                  >
+                    Sign In
+                  </Link>
+                  <Link 
+                    href="/signup" 
+                    className="px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white text-sm font-medium hover:bg-white/20 transition-all"
+                  >
+                    Sign Up
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+        </nav>
+
+        {/* Hero Content */}
+        <div className="relative z-10 container mx-auto px-6">
+          <div className="grid lg:grid-cols-12 gap-12 items-center min-h-[70vh]">
+            
+            {/* Left text block with extra right padding */}
+            <div className="lg:col-span-7 lg:pl-40 space-y-8">
+              <div className="space-y-6">
+                <h1 className="text-4xl lg:text-5xl font-bold leading-tight">
+                  Your AI Tools
+                  <br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-300 via-purple-300 to-indigo-300">Hub</span>
+                  <br />
+                  Starts Here!
+                </h1>
+                
+                <p className="text-lg text-white/80 leading-relaxed max-w-2xl">
+                  Discover, explore, and use amazing AI tools all in one place. 
+                  Your central platform for artificial intelligence powered solutions.
+                </p>
+              </div>
+
+              {/* ALWAYS show Get Started button - regardless of login status */}
+              <div className="flex items-center space-x-6 pt-8">
+                <Link 
+                  href="/signup"
+                  className="px-8 py-4 bg-white text-violet-900 rounded-lg font-semibold hover:bg-white/90 transition-all transform hover:scale-105"
+                >
+                  Get Started Free
+                </Link>
+                <Link 
+                  href="/about" 
+                  className="px-8 py-4 bg-white/10 backdrop-blur-sm border border-white/20 text-white rounded-lg font-semibold hover:bg-white/20 transition-all"
+                >
+                  Learn More
+                </Link>
+              </div>
+            </div>
+
+            {/* Right Visual Element */}
+            <div className="lg:col-span-5 relative">
+              <div className="relative w-full h-96 lg:h-[500px] flex items-center justify-center">
+                <div className="relative w-64 h-64 lg:w-80 lg:h-80">
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-br from-violet-400/30 via-purple-500/20 to-indigo-500/30 backdrop-blur-sm border border-white/10 transform rotate-12 animate-pulse"></div>
+                  <div className="absolute inset-8 rounded-full bg-gradient-to-br from-purple-400/40 via-violet-500/30 to-purple-400/40 backdrop-blur-sm border border-white/20 transform -rotate-12"></div>
+                  <div className="absolute inset-16 rounded-full bg-gradient-to-br from-violet-500/50 via-purple-600/40 to-violet-400/50 backdrop-blur-sm border border-white/30 transform rotate-6"></div>
+                  <div className="absolute inset-24 rounded-full bg-gradient-to-br from-white/20 to-violet-300/30 backdrop-blur-md border border-white/40"></div>
+                  
+                  <div className="absolute -top-4 -right-4 w-3 h-3 bg-violet-400 rounded-full animate-bounce"></div>
+                  <div className="absolute -bottom-6 -left-2 w-2 h-2 bg-purple-400 rounded-full animate-bounce delay-300"></div>
+                  <div className="absolute top-1/3 -right-8 w-4 h-4 bg-indigo-400 rounded-full animate-bounce delay-700"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Tools Section */}
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+              Featured AI Tools
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Explore our handpicked collection of AI tools to boost your productivity
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-12">
+            {featuredTools.map((tool) => (
+              <div key={tool.id} className="group cursor-pointer">
+                <div className="relative overflow-hidden rounded-2xl bg-gray-100 aspect-[4/3]">
+                  <img 
+                    src={tool.image} 
+                    alt={tool.name}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                  
+                  <div className="absolute bottom-6 left-6 text-white">
+                    <div className="flex items-center space-x-3 mb-2">
+                      <span className="text-sm font-medium bg-violet-500/80 backdrop-blur-sm px-3 py-1 rounded-full">
+                        {tool.year}
+                      </span>
+                    </div>
+                    <h3 className="text-2xl font-bold mb-2">{tool.name}</h3>
+                    <p className="text-white/90 text-sm mb-4">{tool.description}</p>
                   </div>
                 </div>
               </div>
+            ))}
+          </div>
 
-              {/* Right Column */}
-              <div className="lg:col-span-5">
-                <div className="relative">
-                  <div className="card-flow p-8 float-animation">
-                    <div className="space-y-6">
-                      <div className="flex items-center justify-between">
-                        <span className="text-label text-infinity">Platform Highlight</span>
-                        <div className="flex space-x-1">
-                          {showcaseFeatures.map((_, index) => (
-                            <div
-                              key={index}
-                              className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                                index === currentFeatureIndex ? 'bg-infinity w-8' : 'bg-mist'
-                              }`}
-                            />
-                          ))}
+          <div className="text-center">
+            <Link 
+              href="/signup"
+              className="inline-flex items-center px-8 py-4 bg-violet-600 text-white rounded-lg font-semibold hover:bg-violet-700 transition-colors"
+            >
+              Start Using Tools
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Blog Section */}
+      <section className="py-20 bg-gray-50">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+              Catch up on the latest news
+            </h2>
+            <Link 
+              href="/blog" 
+              className="inline-flex items-center px-6 py-3 border border-gray-300 rounded-full text-gray-600 hover:border-violet-400 hover:text-violet-600 transition-colors"
+            >
+              See more at Blog
+            </Link>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {featuredBlogs.map((blog, index) => (
+              <div key={blog.id} className="group cursor-pointer">
+                <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300">
+                  <div className="aspect-[4/3] overflow-hidden">
+                    <img 
+                      src={blog.image} 
+                      alt={blog.title}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  </div>
+                  
+                  <div className="p-6">
+                    <h3 className="text-xl font-semibold text-gray-900 mb-4 line-clamp-2 group-hover:text-violet-600 transition-colors">
+                      {blog.title}
+                    </h3>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4 text-sm text-gray-500">
+                        <div className="flex items-center space-x-1">
+                          <Calendar className="w-4 h-4" />
+                          <span>{blog.date}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <Clock className="w-4 h-4" />
+                          <span>{blog.readTime} read</span>
                         </div>
                       </div>
                       
-                      <div className="space-y-4">
-                        <h3 className="text-headline text-obsidian">
-                          {showcaseFeatures[currentFeatureIndex].name}
-                        </h3>
-                        <div className="flex items-center space-x-4">
-                          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                            showcaseFeatures[currentFeatureIndex].status === 'Live' 
-                              ? 'bg-success text-white'
-                              : showcaseFeatures[currentFeatureIndex].status === 'Beta'
-                              ? 'bg-warning text-white' 
-                              : 'bg-infinity text-white'
-                          }`}>
-                            {showcaseFeatures[currentFeatureIndex].status}
-                          </span>
-                          <span className="text-caption text-stone">
-                            {showcaseFeatures[currentFeatureIndex].users} users
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between pt-6">
-                        <div className="flex space-x-3">
-                          <button className="p-3 bg-infinity text-white rounded-xl hover:scale-110 transition-transform">
-                            <Play className="w-5 h-5" />
-                          </button>
-                          <button className="p-3 bg-snow text-stone rounded-xl hover:scale-110 transition-transform">
-                            <Code2 className="w-5 h-5" />
-                          </button>
-                        </div>
-                        <button className="btn-minimal">
-                          <ArrowUpRight className="w-4 h-4 mr-2" />
-                          Explore
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="absolute -top-6 -right-6 w-12 h-12 bg-growth rounded-full flex items-center justify-center text-white animate-bounce">
-                    <Code2 className="w-6 h-6" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Features Section */}
-        <section className="section-flow py-24 bg-gradient-to-b from-paper to-snow">
-          <div className="container mx-auto px-6">
-            <div className="text-center mb-20">
-              <h2 className="text-display infinity-gradient mb-6">
-                Enterprise AI Excellence
-              </h2>
-              <p className="text-body-lg text-slate max-w-3xl mx-auto">
-                Built for businesses that demand the highest standards of performance, 
-                security, and reliability in their AI operations.
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-8">
-              {features.map((feature, index) => (
-                <div key={index} className="card-organic p-8 hover-lift group">
-                  <div className="space-y-6">
-                    <div className={`w-16 h-16 bg-gradient-infinity rounded-2xl flex items-center justify-center text-white group-hover:scale-110 transition-transform`}>
-                      {feature.icon}
-                    </div>
-                    
-                    <div className="space-y-4">
-                      <h3 className="text-title text-obsidian group-hover:text-infinity transition-colors">
-                        {feature.title}
-                      </h3>
-                      <p className="text-body text-slate leading-relaxed">
-                        {feature.description}
-                      </p>
-                    </div>
-
-                    <button className="btn-minimal">
-                      Learn More
-                      <ArrowUpRight className="w-4 h-4 ml-2 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Philosophy Section */}
-        <section className="py-24">
-          <div className="container mx-auto px-6">
-            <div className="grid lg:grid-cols-2 gap-20 items-center">
-              
-              <div className="space-y-8">
-                <div className="space-y-6">
-                  <span className="text-label text-infinity">Our Mission</span>
-                  <h2 className="text-display text-obsidian">
-                    Technology That
-                    <br />
-                    <span className="growth-gradient">Empowers Teams</span>
-                  </h2>
-                  <p className="text-body-lg text-slate leading-relaxed">
-                    At PsycAi, we believe AI should enhance human creativity, not replace it. 
-                    Our tools are designed to amplify your team's capabilities, streamline complex processes, 
-                    and free up time for what matters most—innovation and strategic thinking.
-                  </p>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="flex items-start space-x-4">
-                    <div className="w-2 h-2 bg-infinity rounded-full mt-3" />
-                    <div>
-                      <div className="text-title text-obsidian mb-1">Human-Centered Design</div>
-                      <div className="text-body text-slate">Intuitive interfaces that feel natural to use</div>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-4">
-                    <div className="w-2 h-2 bg-growth rounded-full mt-3" />
-                    <div>
-                      <div className="text-title text-obsidian mb-1">Enterprise Security</div>
-                      <div className="text-body text-slate">SOC 2 compliant with end-to-end encryption</div>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-4">
-                    <div className="w-2 h-2 bg-leaf rounded-full mt-3" />
-                    <div>
-                      <div className="text-title text-obsidian mb-1">Scalable Architecture</div>
-                      <div className="text-body text-slate">Grows with your team from startup to enterprise</div>
+                      <button className="inline-flex items-center text-sm font-medium text-violet-600 hover:text-violet-700 transition-colors">
+                        Read more
+                        <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                      </button>
                     </div>
                   </div>
                 </div>
               </div>
-
-              <div className="relative">
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="card-minimal p-6 hover-lift">
-                    <Users className="w-8 h-8 text-infinity mb-4" />
-                    <div className="text-title text-obsidian mb-2">25K+ Users</div>
-                    <div className="text-caption text-slate">Trust our platform</div>
-                  </div>
-                  <div className="card-minimal p-6 hover-lift mt-12">
-                    <Layers className="w-8 h-8 text-growth mb-4" />
-                    <div className="text-title text-obsidian mb-2">Enterprise Ready</div>
-                    <div className="text-caption text-slate">Built for scale</div>
-                  </div>
-                  <div className="card-minimal p-6 hover-lift">
-                    <TrendingUp className="w-8 h-8 text-leaf mb-4" />
-                    <div className="text-title text-obsidian mb-2">Always Improving</div>
-                    <div className="text-caption text-slate">Continuous updates</div>
-                  </div>
-                  <div className="card-minimal p-6 hover-lift mt-12">
-                    <Shield className="w-8 h-8 text-infinity mb-4" />
-                    <div className="text-title text-obsidian mb-2">Secure by Design</div>
-                    <div className="text-caption text-slate">SOC 2 compliant</div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
-        </section>
-
-        {/* CTA Section */}
-        <section className="py-24 bg-gradient-to-r from-obsidian to-slate text-snow relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-infinity opacity-10" />
-          
-          <div className="container mx-auto px-6 relative">
-            <div className="text-center max-w-4xl mx-auto space-y-8">
-              <h2 className="text-display text-snow mb-6">
-                Ready to Transform
-                <br />
-                <span className="infinity-gradient">Your Workflow?</span>
-              </h2>
-              
-              <p className="text-body-lg text-mist leading-relaxed">
-                Join thousands of teams who have already discovered the power of AI-enhanced productivity. 
-                Start your free trial today and experience the future of intelligent automation.
-              </p>
-
-              <div className="flex flex-wrap justify-center gap-6 pt-8">
-                {user ? (
-                  <>
-                    <a href="/tools" className="btn-infinity">
-                      <Zap className="w-5 h-5 mr-2" />
-                      Access Platform
-                    </a>
-                    <a href="/contact" className="btn-growth bg-transparent border-snow text-snow hover:bg-snow hover:text-obsidian">
-                      <Users className="w-5 h-5 mr-2" />
-                      Contact Sales
-                    </a>
-                  </>
-                ) : (
-                  <>
-                    <a href="/signup" className="btn-infinity">
-                      <Sparkles className="w-5 h-5 mr-2" />
-                      Start Free Trial
-                    </a>
-                    <a href="/contact" className="btn-growth bg-transparent border-snow text-snow hover:bg-snow hover:text-obsidian">
-                      <Users className="w-5 h-5 mr-2" />
-                      Schedule Demo
-                    </a>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
+        </div>
+      </section>
     </Layout>
   )
 }

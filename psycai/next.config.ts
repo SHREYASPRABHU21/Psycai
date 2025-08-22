@@ -1,56 +1,23 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Security headers for iframe embedding
   async headers() {
     return [
       {
         source: '/(.*)',
         headers: [
           {
-            key: 'X-Frame-Options',
-            value: 'SAMEORIGIN'
-          },
-          {
             key: 'Content-Security-Policy',
             value: [
-              "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https:",
-              "style-src 'self' 'unsafe-inline' https:",
-              "img-src 'self' data: https:",
-              "font-src 'self' https:",
-              "connect-src 'self' https:",
-              "frame-src 'self' https://chat.openai.com https://claude.ai https://gemini.google.com https://www.perplexity.ai https://www.midjourney.com https://copilot.github.com",
-              "frame-ancestors 'self'",
-              "object-src 'none'",
-              "base-uri 'self'"
+              "frame-src 'self' https://*.firebaseapp.com https://*.google.com https://accounts.google.com https://content.googleapis.com",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://*.firebaseapp.com https://*.googleapis.com https://apis.google.com https://www.gstatic.com https://accounts.google.com",
+              "connect-src 'self' https://*.firebaseapp.com https://*.googleapis.com https://accounts.google.com https://apis.google.com wss://*.firebaseapp.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com",
+              "img-src 'self' data: https://*.googleapis.com https://*.google.com https://*.gstatic.com"
             ].join('; ')
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff'
-          },
-          {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin'
-          },
-          {
-            key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=()'
           }
-        ],
-      },
+        ]
+      }
     ]
-  },
-
-  // 👇 Add this for next/image external domains
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'lh3.googleusercontent.com',
-      },
-    ],
-  },
+  }
 }
 
 module.exports = nextConfig

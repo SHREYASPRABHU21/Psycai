@@ -1,205 +1,201 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
-import { User, Session, AuthError } from '@supabase/supabase-js'
-import { createClient } from '@/lib/supabase/client'
-import { debugLog } from '@/lib/debug'
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { 
+  signInWithPopup,
+  signOut, 
+  onAuthStateChanged,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  updateProfile
+} from 'firebase/auth'
+import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore'
+import { auth, googleProvider, db } from '@/lib/firebase'
+import { User } from 'firebase/auth'
+
+interface UserData {
+  uid: string
+  email: string
+  displayName: string
+  photoURL?: string
+  phone?: string
+  country?: string
+  createdAt: any
+  loginMethod: 'email' | 'google'
+}
 
 interface AuthContextType {
   user: User | null
-  session: Session | null
+  userData: UserData | null
   loading: boolean
   signInWithGoogle: () => Promise<void>
-  signOut: () => Promise<void>
-  error: AuthError | null
-  isClient: boolean
-  debugInfo: any
+  signUpWithEmail: (data: SignupData) => Promise<void>
+  signInWithEmail: (email: string, password: string) => Promise<void>
+  logout: () => Promise<void>
+  error: string | null
+  clearError: () => void
+}
+
+interface SignupData {
+  email: string
+  password: string
+  phone: string
+  country: string
+  displayName: string
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
-  const [session, setSession] = useState<Session | null>(null)
+  const [userData, setUserData] = useState<UserData | null>(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<AuthError | null>(null)
-  const [isClient, setIsClient] = useState(false)
-  const [debugInfo, setDebugInfo] = useState<any>({})
-  
-  const supabase = createClient()
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    setIsClient(true)
+    console.log('Auth Context: Setting up listener...')
     
-    const initializeAuth = async () => {
-      try {
-        debugLog('AuthContext', 'Initializing auth')
-        
-        // Get initial session
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-        
-        debugLog('AuthContext', 'Initial session check', { 
-          hasSession: !!session,
-          sessionError,
-          user: session?.user?.id 
-        })
-
-        if (sessionError) {
-          debugLog('AuthContext', 'Session error', null, sessionError)
-          setError(sessionError)
-        } else {
-          setSession(session)
-          setUser(session?.user ?? null)
-          
-          // If we have a user, try to create/update profile
-          if (session?.user) {
-            await createOrUpdateProfile(session.user)
-          }
-        }
-        
-        setDebugInfo({
-          hasSession: !!session,
-          userId: session?.user?.id,
-          sessionError: sessionError?.message,
-          timestamp: new Date().toISOString()
-        })
-
-      } catch (err) {
-        debugLog('AuthContext', 'Initialization error', null, err)
-        setError(err as AuthError)
-      } finally {
-        setLoading(false)
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      console.log('Auth Context: State changed -', firebaseUser ? firebaseUser.email : 'No user')
+      
+      if (firebaseUser) {
+        setUser(firebaseUser)
+        await fetchUserData(firebaseUser.uid)
+      } else {
+        setUser(null)
+        setUserData(null)
       }
-    }
+      
+      setLoading(false)
+    })
 
-    initializeAuth()
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        debugLog('AuthContext', 'Auth state change', { event, hasSession: !!session })
-        
-        setSession(session)
-        setUser(session?.user ?? null)
-        setLoading(false)
-        
-        // Handle sign in
-        if (event === 'SIGNED_IN' && session?.user) {
-          debugLog('AuthContext', 'User signed in', { userId: session.user.id })
-          await createOrUpdateProfile(session.user)
-        }
-        
-        if (event === 'SIGNED_OUT') {
-          debugLog('AuthContext', 'User signed out')
-          setUser(null)
-          setSession(null)
-        }
-
-        setDebugInfo({
-          event,
-          hasSession: !!session,
-          userId: session?.user?.id,
-          timestamp: new Date().toISOString()
-        })
-      }
-    )
-
-    return () => {
-      debugLog('AuthContext', 'Cleaning up auth subscription')
-      subscription.unsubscribe()
-    }
+    return unsubscribe
   }, [])
 
-  const createOrUpdateProfile = async (user: User) => {
+  const fetchUserData = async (uid: string) => {
     try {
-      debugLog('AuthContext', 'Creating/updating profile', { userId: user.id })
-      
-      const profileData = {
-        id: user.id,
-        email: user.email!,
-        full_name: user.user_metadata?.full_name || user.user_metadata?.name || null,
-        avatar_url: user.user_metadata?.avatar_url || null,
-        updated_at: new Date().toISOString(),
+      const userDoc = await getDoc(doc(db, 'users', uid))
+      if (userDoc.exists()) {
+        const data = userDoc.data() as UserData
+        console.log('Auth Context: User data loaded -', data.displayName)
+        setUserData(data)
       }
-
-      const { data, error } = await supabase
-        .from('profiles')
-        .upsert(profileData)
-        .select()
-
-      if (error) {
-        debugLog('AuthContext', 'Profile upsert error', null, error)
-        throw error
-      }
-
-      debugLog('AuthContext', 'Profile created/updated successfully', data)
     } catch (error) {
-      debugLog('AuthContext', 'Profile creation error', null, error)
-      console.error('Error creating/updating profile:', error)
+      console.error('Error fetching user data:', error)
     }
   }
 
   const signInWithGoogle = async () => {
-    if (!isClient) {
-      debugLog('AuthContext', 'Sign in attempted before client ready')
-      return
-    }
-    
     try {
-      debugLog('AuthContext', 'Starting Google sign in')
       setError(null)
+      console.log('Auth Context: Starting Google sign in...')
       
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`
+      const result = await signInWithPopup(auth, googleProvider)
+      console.log('Auth Context: Google sign in successful')
+      
+      const userDoc = await getDoc(doc(db, 'users', result.user.uid))
+      
+      if (!userDoc.exists()) {
+        const userData: UserData = {
+          uid: result.user.uid,
+          email: result.user.email!,
+          displayName: result.user.displayName!,
+          photoURL: result.user.photoURL || undefined,
+          createdAt: serverTimestamp(),
+          loginMethod: 'google'
         }
-      })
-
-      debugLog('AuthContext', 'Google sign in response', { data, error })
-
-      if (error) {
-        setError(error)
+        
+        await setDoc(doc(db, 'users', result.user.uid), userData)
       }
-    } catch (err) {
-      debugLog('AuthContext', 'Google sign in error', null, err)
-      setError(err as AuthError)
+      
+    } catch (error: any) {
+      console.error('Google sign in error:', error)
+      setError('Failed to sign in with Google')
+      throw error
     }
   }
 
-  const signOut = async () => {
-    if (!isClient) return
-    
+  const signUpWithEmail = async (data: SignupData) => {
     try {
-      debugLog('AuthContext', 'Starting sign out')
       setError(null)
+      console.log('Auth Context: Starting email signup...')
       
-      const { error } = await supabase.auth.signOut()
+      const result = await createUserWithEmailAndPassword(auth, data.email, data.password)
+      await updateProfile(result.user, { displayName: data.displayName })
       
-      if (error) {
-        debugLog('AuthContext', 'Sign out error', null, error)
-        setError(error)
-      } else {
-        debugLog('AuthContext', 'Sign out successful')
-        // Force clear state
-        setUser(null)
-        setSession(null)
+      const userData: UserData = {
+        uid: result.user.uid,
+        email: data.email,
+        displayName: data.displayName,
+        phone: data.phone,
+        country: data.country,
+        createdAt: serverTimestamp(),
+        loginMethod: 'email'
       }
-    } catch (err) {
-      debugLog('AuthContext', 'Sign out error', null, err)
-      setError(err as AuthError)
+      
+      await setDoc(doc(db, 'users', result.user.uid), userData)
+      console.log('Auth Context: Email signup successful')
+      
+    } catch (error: any) {
+      console.error('Email signup error:', error)
+      if (error.code === 'auth/email-already-in-use') {
+        setError('This email is already registered')
+      } else if (error.code === 'auth/weak-password') {
+        setError('Password is too weak')
+      } else {
+        setError('Failed to create account')
+      }
+      throw error
     }
+  }
+
+  const signInWithEmail = async (email: string, password: string) => {
+    try {
+      setError(null)
+      console.log('Auth Context: Starting email sign in...')
+      
+      await signInWithEmailAndPassword(auth, email, password)
+      console.log('Auth Context: Email sign in successful')
+      
+    } catch (error: any) {
+      console.error('Email signin error:', error)
+      if (error.code === 'auth/user-not-found') {
+        setError('No account found with this email')
+      } else if (error.code === 'auth/wrong-password') {
+        setError('Incorrect password')
+      } else if (error.code === 'auth/invalid-credential') {
+        setError('Invalid email or password')
+      } else {
+        setError('Failed to sign in')
+      }
+      throw error
+    }
+  }
+
+  const logout = async () => {
+    try {
+      setError(null)
+      await signOut(auth)
+    } catch (error: any) {
+      console.error('Logout error:', error)
+      setError('Failed to sign out')
+    }
+  }
+
+  const clearError = () => {
+    setError(null)
   }
 
   const value = {
     user,
-    session,
+    userData,
     loading,
     signInWithGoogle,
-    signOut,
+    signUpWithEmail,
+    signInWithEmail,
+    logout,
     error,
-    isClient,
-    debugInfo,
+    clearError
   }
 
   return (
@@ -209,7 +205,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   )
 }
 
-export function useAuth() {
+export const useAuth = () => {
   const context = useContext(AuthContext)
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider')

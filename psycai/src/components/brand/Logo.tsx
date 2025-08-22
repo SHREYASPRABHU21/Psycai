@@ -34,11 +34,11 @@ export default function Logo({
           />
         </div>
       )}
-      {/* {(variant === 'full' || variant === 'text') && (
+      {(variant === 'full' || variant === 'text') && (
         <span className="text-display infinity-gradient font-bold tracking-tight">
           PsycAi
         </span>
-      )} */}
+      )}
     </Link>
   )
 }

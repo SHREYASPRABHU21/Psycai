@@ -10,12 +10,12 @@ interface LayoutProps {
 
 export default function Layout({ children, showNav = true, showFooter = true }: LayoutProps) {
   return (
-    <div className="min-h-screen bg-paper">
+    <>
       {showNav && <Navigation />}
-      <main className="relative">
+      <main>
         {children}
       </main>
       {showFooter && <Footer />}
-    </div>
+    </>
   )
 }
