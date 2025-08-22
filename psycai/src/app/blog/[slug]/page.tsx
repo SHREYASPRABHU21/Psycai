@@ -12,11 +12,11 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
   const { slug } = await params
   const { data: blog } = await getBlogBySlug(slug)
   
-  if (!blog) return { title: 'Blog Post Not Found' }
+  if (!blog) return { title: 'Story Not Found | PsycAi' }
 
   return {
-    title: `${blog.title} | Psycai Blog`,
-    description: blog.excerpt || `Read ${blog.title} on Psycai Blog`,
+    title: `${blog.title} | PsycAi Stories`,
+    description: blog.excerpt || `Discover ${blog.title} in the PsycAi garden of AI innovation`,
     openGraph: {
       title: blog.title,
       description: blog.excerpt || '',

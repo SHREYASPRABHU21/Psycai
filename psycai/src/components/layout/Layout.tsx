@@ -1,18 +1,21 @@
 import { ReactNode } from 'react'
 import Navigation from './Navigation'
+import Footer from './Footer'
 
 interface LayoutProps {
   children: ReactNode
   showNav?: boolean
+  showFooter?: boolean
 }
 
-const Layout = ({ children, showNav = true }: LayoutProps) => {
+export default function Layout({ children, showNav = true, showFooter = true }: LayoutProps) {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-paper">
       {showNav && <Navigation />}
-      <main>{children}</main>
+      <main className="relative">
+        {children}
+      </main>
+      {showFooter && <Footer />}
     </div>
   )
 }
-
-export default Layout

@@ -1,34 +1,40 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import UserProfile from '@/components/auth/UserProfile'
-import { Menu, X } from 'lucide-react'
+import Logo from '@/components/brand/Logo'
+import { Menu, X, Sparkles } from 'lucide-react'
 
-const Navigation = () => {
+export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
   const { user, loading, isClient } = useAuth()
   const pathname = usePathname()
 
-  // Prevent hydration mismatch
   useEffect(() => {
     setMounted(true)
+    
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20)
+    }
+    
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
   const navigationItems = [
-    { href: '/', label: 'Home', showWhenLoggedOut: true },
-    { href: '/tools', label: 'Tools', requiresAuth: true },
-    { href: '/blog', label: 'Blog', showWhenLoggedOut: true },
+    { href: '/', label: 'Platform', showWhenLoggedOut: true },
+    { href: '/tools', label: 'Solutions', requiresAuth: true },
+    { href: '/blog', label: 'Insights', showWhenLoggedOut: true },
+    { href: '/pricing', label: 'Pricing', showWhenLoggedOut: true },
     { href: '/admin/blogs', label: 'Admin', requiresAuth: true },
   ]
 
   const isActive = (href: string) => {
-    if (href === '/') {
-      return pathname === '/'
-    }
+    if (href === '/') return pathname === '/'
     return pathname.startsWith(href)
   }
 
@@ -38,22 +44,15 @@ const Navigation = () => {
     return true
   })
 
-  // Show loading state during hydration
   if (!mounted || !isClient) {
     return (
-      <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200/50">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo */}
-            <Link href="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-primary to-secondary rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">P</span>
-              </div>
-              <span className="text-2xl font-bold gradient-text">Psycai</span>
-            </Link>
-            
-            {/* Loading placeholder */}
-            <div className="w-20 h-8 bg-gray-200 rounded animate-pulse"></div>
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled ? 'bg-paper/95 backdrop-blur-xl border-b border-mist' : 'bg-transparent'
+      }`}>
+        <div className="container mx-auto px-6">
+          <div className="flex justify-between items-center h-20">
+            <Logo size="md" />
+            <div className="w-20 h-8 bg-mist rounded animate-pulse" />
           </div>
         </div>
       </nav>
@@ -61,113 +60,106 @@ const Navigation = () => {
   }
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200/50">
-      <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-primary to-secondary rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">P</span>
-            </div>
-            <span className="text-2xl font-bold gradient-text">Psycai</span>
-          </Link>
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      scrolled ? 'bg-paper/95 backdrop-blur-xl border-b border-mist shadow-gentle' : 'bg-transparent'
+    }`}>
+      <div className="container mx-auto px-6">
+        <div className="flex justify-between items-center h-20">
+          <Logo size="md" />
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden lg:flex items-center space-x-8">
             <div className="flex items-center space-x-6">
               {filteredItems.map((item) => (
-                <Link
+                <a
                   key={item.href}
                   href={item.href}
-                  className={`text-sm font-medium transition-colors hover:text-primary ${
+                  className={`text-body font-medium transition-all duration-300 relative ${
                     isActive(item.href)
-                      ? 'text-primary border-b-2 border-primary'
-                      : 'text-text/70'
+                      ? 'text-infinity'
+                      : 'text-slate hover:text-infinity'
                   }`}
                 >
                   {item.label}
-                </Link>
+                  {isActive(item.href) && (
+                    <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-infinity rounded-full" />
+                  )}
+                </a>
               ))}
             </div>
 
-            {/* Auth Section */}
             <div className="flex items-center space-x-4">
               {loading ? (
-                <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse" />
+                <div className="w-10 h-10 bg-mist rounded-full animate-pulse" />
               ) : user ? (
                 <UserProfile />
               ) : (
-                <div className="flex items-center space-x-2">
-                  <Link
+                <div className="flex items-center space-x-3">
+                  <a
                     href="/login"
-                    className="text-sm font-medium text-text/70 hover:text-primary transition-colors"
+                    className="text-body font-medium text-slate hover:text-infinity transition-colors"
                   >
                     Sign In
-                  </Link>
-                  <Link
+                  </a>
+                  <a
                     href="/signup"
-                    className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors"
+                    className="btn-infinity text-sm"
                   >
-                    Get Started
-                  </Link>
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Start Free Trial
+                  </a>
                 </div>
               )}
             </div>
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center space-x-4">
+          <div className="lg:hidden flex items-center space-x-4">
             {user && !loading && <UserProfile />}
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-              aria-label="Toggle menu"
+              className="p-2 rounded-xl hover:bg-snow transition-colors"
             >
-              {isOpen ? (
-                <X className="w-5 h-5 text-text" />
-              ) : (
-                <Menu className="w-5 h-5 text-text" />
-              )}
+              {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
         </div>
 
-        {/* Mobile Navigation Menu */}
+        {/* Mobile Navigation */}
         {isOpen && (
-          <div className="md:hidden py-4 border-t border-gray-200/50">
-            <div className="flex flex-col space-y-3">
+          <div className="lg:hidden py-6 border-t border-mist bg-paper/95 backdrop-blur-xl">
+            <div className="space-y-4">
               {filteredItems.map((item) => (
-                <Link
+                <a
                   key={item.href}
                   href={item.href}
                   onClick={() => setIsOpen(false)}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`block px-4 py-3 rounded-xl text-body font-medium transition-all ${
                     isActive(item.href)
-                      ? 'text-primary bg-primary/10'
-                      : 'text-text/70 hover:text-primary hover:bg-gray-50'
+                      ? 'text-infinity bg-infinity/10'
+                      : 'text-slate hover:text-infinity hover:bg-snow'
                   }`}
                 >
                   {item.label}
-                </Link>
+                </a>
               ))}
               
-              {/* Mobile Auth Section */}
               {!loading && !user && (
-                <div className="pt-3 border-t border-gray-200/50 space-y-2">
-                  <Link
+                <div className="pt-4 border-t border-mist space-y-3">
+                  <a
                     href="/login"
                     onClick={() => setIsOpen(false)}
-                    className="block px-3 py-2 text-sm font-medium text-text/70 hover:text-primary hover:bg-gray-50 rounded-lg transition-colors"
+                    className="block px-4 py-3 text-body font-medium text-slate hover:text-infinity hover:bg-snow rounded-xl transition-all"
                   >
                     Sign In
-                  </Link>
-                  <Link
+                  </a>
+                  <a
                     href="/signup"
                     onClick={() => setIsOpen(false)}
-                    className="block bg-primary text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors text-center"
+                    className="btn-infinity w-full text-center"
                   >
-                    Get Started
-                  </Link>
+                    Start Free Trial
+                  </a>
                 </div>
               )}
             </div>
@@ -177,5 +169,3 @@ const Navigation = () => {
     </nav>
   )
 }
-
-export default Navigation
