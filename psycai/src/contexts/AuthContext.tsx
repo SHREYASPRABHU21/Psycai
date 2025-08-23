@@ -1,9 +1,9 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
-import { 
+import {
   signInWithPopup,
-  signOut, 
+  signOut,
   onAuthStateChanged,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -12,6 +12,7 @@ import {
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore'
 import { auth, googleProvider, db } from '@/lib/firebase'
 import { User } from 'firebase/auth'
+import { trackSignup, trackLogin, setAnalyticsUser } from '@/lib/analytics'
 
 interface UserData {
   uid: string
@@ -79,6 +80,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const data = userDoc.data() as UserData
         console.log('Auth Context: User data loaded -', data.displayName)
         setUserData(data)
+        
+        // Set analytics user properties
+        setAnalyticsUser(uid, data)
       }
     } catch (error) {
       console.error('Error fetching user data:', error)
@@ -96,6 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userDoc = await getDoc(doc(db, 'users', result.user.uid))
       
       if (!userDoc.exists()) {
+        // New user - track signup
         const userData: UserData = {
           uid: result.user.uid,
           email: result.user.email!,
@@ -106,6 +111,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         
         await setDoc(doc(db, 'users', result.user.uid), userData)
+        trackSignup('google', result.user.uid)
+        console.log('Auth Context: New Google user created')
+      } else {
+        // Existing user - track login
+        trackLogin('google', result.user.uid)
+        console.log('Auth Context: Existing Google user logged in')
       }
       
     } catch (error: any) {
@@ -134,6 +145,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       
       await setDoc(doc(db, 'users', result.user.uid), userData)
+      
+      // Track signup
+      trackSignup('email', result.user.uid)
+      
       console.log('Auth Context: Email signup successful')
       
     } catch (error: any) {
@@ -154,7 +169,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setError(null)
       console.log('Auth Context: Starting email sign in...')
       
-      await signInWithEmailAndPassword(auth, email, password)
+      const result = await signInWithEmailAndPassword(auth, email, password)
+      
+      // Track login
+      trackLogin('email', result.user.uid)
+      
       console.log('Auth Context: Email sign in successful')
       
     } catch (error: any) {

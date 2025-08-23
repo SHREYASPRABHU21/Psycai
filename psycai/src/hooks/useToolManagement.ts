@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { AITool } from '@/lib/aiTools'
+import { AITool } from '@/lib/tools'
 
 export function useToolManagement() {
   const [recentTools, setRecentTools] = useState<AITool[]>([])

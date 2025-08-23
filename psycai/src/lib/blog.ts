@@ -1,146 +1,145 @@
-import { createClient } from '@/lib/supabase/client'
-import { Blog, BlogCategory, BlogFilters } from '@/types/blog'
-import { debugLog, logSupabaseOperation } from '@/lib/debug'
+import { 
+  collection, 
+  getDocs, 
+  doc, 
+  getDoc, 
+  addDoc, 
+  updateDoc, 
+  query, 
+  orderBy, 
+  where, 
+  serverTimestamp 
+} from 'firebase/firestore'
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { db } from './firebase'
 
-export function generateSlug(title: string): string {
+export interface BlogPost {
+  id: string
+  title: string
+  slug: string
+  excerpt: string
+  content: string
+  author: {
+    name: string
+    email: string
+    photoURL?: string
+    uid: string
+  }
+  coverImage: string
+  category: string
+  tags: string[]
+  published: boolean
+  createdAt: any
+  updatedAt: any
+  views: number
+  likes: number
+}
+
+export interface CreateBlogPost {
+  title: string
+  slug: string
+  excerpt: string
+  content: string
+  category: string
+  tags: string[]
+  coverImage: string
+  published: boolean
+}
+
+// Fetch all published blogs
+export const fetchBlogs = async (): Promise<BlogPost[]> => {
+  try {
+    const blogsRef = collection(db, 'blogs')
+    const q = query(
+      blogsRef, 
+      where('published', '==', true),
+      orderBy('createdAt', 'desc')
+    )
+    const querySnapshot = await getDocs(q)
+    
+    const blogs: BlogPost[] = []
+    querySnapshot.forEach((doc) => {
+      blogs.push({
+        id: doc.id,
+        ...doc.data()
+      } as BlogPost)
+    })
+    
+    return blogs
+  } catch (error) {
+    console.error('Error fetching blogs:', error)
+    return []
+  }
+}
+
+// Fetch single blog by slug
+export const fetchBlogBySlug = async (slug: string): Promise<BlogPost | null> => {
+  try {
+    const blogsRef = collection(db, 'blogs')
+    const q = query(blogsRef, where('slug', '==', slug))
+    const querySnapshot = await getDocs(q)
+    
+    if (querySnapshot.empty) {
+      return null
+    }
+    
+    const doc = querySnapshot.docs[0]
+    return {
+      id: doc.id,
+      ...doc.data()
+    } as BlogPost
+  } catch (error) {
+    console.error('Error fetching blog:', error)
+    return null
+  }
+}
+
+// Create new blog post
+export const createBlogPost = async (
+  blogData: CreateBlogPost, 
+  authorData: { name: string; email: string; photoURL?: string; uid: string }
+): Promise<string | null> => {
+  try {
+    const blogsRef = collection(db, 'blogs')
+    const docRef = await addDoc(blogsRef, {
+      ...blogData,
+      author: authorData,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      views: 0,
+      likes: 0
+    })
+    
+    return docRef.id
+  } catch (error) {
+    console.error('Error creating blog post:', error)
+    return null
+  }
+}
+
+// Update blog post
+export const updateBlogPost = async (
+  blogId: string, 
+  updates: Partial<CreateBlogPost>
+): Promise<boolean> => {
+  try {
+    const blogRef = doc(db, 'blogs', blogId)
+    await updateDoc(blogRef, {
+      ...updates,
+      updatedAt: serverTimestamp()
+    })
+    return true
+  } catch (error) {
+    console.error('Error updating blog post:', error)
+    return false
+  }
+}
+
+// Generate slug from title
+export const generateSlug = (title: string): string => {
   return title
     .toLowerCase()
     .replace(/[^\w\s-]/g, '')
     .replace(/[\s_-]+/g, '-')
     .replace(/^-+|-+$/g, '')
-}
-
-export function generateExcerpt(content: string, maxLength: number = 150): string {
-  const plainText = content
-    .replace(/#{1,6}\s+/g, '')
-    .replace(/\*\*([^*]+)\*\*/g, '$1')
-    .replace(/\*([^*]+)\*/g, '$1')
-    .replace(/`([^`]+)`/g, '$1')
-    .replace(/<[^>]*>/g, '')
-    .trim()
-
-  if (plainText.length <= maxLength) return plainText
-  
-  return plainText.substring(0, maxLength).trim() + '...'
-}
-
-export async function getBlogs(filters?: BlogFilters) {
-  return logSupabaseOperation('getBlogs', async () => {
-    const supabase = createClient()
-    
-    let query = supabase
-      .from('blogs')
-      .select('*')
-      .order('created_at', { ascending: false })
-
-    if (filters?.published !== undefined) {
-      query = query.eq('published', filters.published)
-    }
-
-    if (filters?.category) {
-      query = query.eq('category', filters.category)
-    }
-
-    if (filters?.search) {
-      query = query.or(`title.ilike.%${filters.search}%,content.ilike.%${filters.search}%,tags.cs.{${filters.search}}`)
-    }
-
-    const result = await query
-    
-    if (result.error) {
-      throw new Error(`Failed to fetch blogs: ${result.error.message}`)
-    }
-
-    return result
-  })
-}
-
-export async function getBlogBySlug(slug: string) {
-  return logSupabaseOperation('getBlogBySlug', async () => {
-    const supabase = createClient()
-    
-    const result = await supabase
-      .from('blogs')
-      .select('*')
-      .eq('slug', slug)
-      .eq('published', true)
-      .single()
-
-    if (result.error && result.error.code !== 'PGRST116') {
-      throw new Error(`Failed to fetch blog: ${result.error.message}`)
-    }
-
-    return result
-  })
-}
-
-export async function getBlogCategories() {
-  return logSupabaseOperation('getBlogCategories', async () => {
-    const supabase = createClient()
-    
-    const result = await supabase
-      .from('blog_categories')
-      .select('*')
-      .order('name')
-
-    if (result.error) {
-      throw new Error(`Failed to fetch categories: ${result.error.message}`)
-    }
-
-    return result
-  })
-}
-
-export async function createBlog(blog: Partial<Blog>) {
-  return logSupabaseOperation('createBlog', async () => {
-    const supabase = createClient()
-    
-    const result = await supabase
-      .from('blogs')
-      .insert([blog])
-      .select()
-      .single()
-
-    if (result.error) {
-      throw new Error(`Failed to create blog: ${result.error.message}`)
-    }
-
-    return result
-  })
-}
-
-export async function updateBlog(id: string, blog: Partial<Blog>) {
-  return logSupabaseOperation('updateBlog', async () => {
-    const supabase = createClient()
-    
-    const result = await supabase
-      .from('blogs')
-      .update(blog)
-      .eq('id', id)
-      .select()
-      .single()
-
-    if (result.error) {
-      throw new Error(`Failed to update blog: ${result.error.message}`)
-    }
-
-    return result
-  })
-}
-
-export async function deleteBlog(id: string) {
-  return logSupabaseOperation('deleteBlog', async () => {
-    const supabase = createClient()
-    
-    const result = await supabase
-      .from('blogs')
-      .delete()
-      .eq('id', id)
-
-    if (result.error) {
-      throw new Error(`Failed to delete blog: ${result.error.message}`)
-    }
-
-    return result
-  })
 }

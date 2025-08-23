@@ -1,6 +1,6 @@
 'use client'
 
-import { AITool } from '@/lib/aiTools'
+import { AITool } from '@/lib/tools'
 import { Clock, Heart } from 'lucide-react'
 
 interface QuickAccessProps {

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { AITool } from '@/lib/aiTools'
+import { AITool } from '@/lib/tools'
 import { ExternalLink, RefreshCw, AlertTriangle } from 'lucide-react'
 
 interface SecureIframeProps {

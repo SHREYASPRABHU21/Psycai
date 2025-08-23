@@ -1,466 +1,669 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
-import Layout from '@/components/layout/Layout'
-import { getBlogs, deleteBlog, getBlogCategories } from '@/lib/blog'
-import { Blog, BlogCategory } from '@/types/blog'
-import { 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Eye, 
-  Search, 
-  Filter, 
-  Calendar,
-  BarChart3,
-  TrendingUp,
-  Users,
-  FileText,
-  Sparkles,
-  Settings,
-  Crown
-} from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { createBlog, generateSlug, fetchBlogs } from '@/lib/supabase-blog'
+import { createTool, fetchTools, deleteTool } from '@/lib/supabase-tools'
+import { uploadImage } from '@/lib/supabase-storage'
+import { Blog, Tool } from '@/lib/supabase'
+import { Save, Upload, Plus, Settings, FileText, Trash2 } from 'lucide-react'
 
-export default function AdminBlogsPage() {
-  const { user, loading: authLoading, isClient } = useAuth()
+export default function AdminPage() {
+  const { user, userData, loading } = useAuth()
   const router = useRouter()
+  
+  const [activeTab, setActiveTab] = useState<'blogs' | 'tools'>('blogs')
+  
+  // Blog form state
+  const [blogForm, setBlogForm] = useState({
+    title: '',
+    slug: '',
+    excerpt: '',
+    content: '',
+    category: 'AI Research',
+    tags: '',
+    cover_image: '',
+    published: false
+  })
+  
+  // Tool form state
+  const [toolForm, setToolForm] = useState({
+    name: '',
+    description: '',
+    image: '',
+    link: '',
+    category: 'Writing',
+    rating: 4.5,
+    users: '1.0k',
+    featured: false
+  })
+  
+  const [uploading, setUploading] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [blogs, setBlogs] = useState<Blog[]>([])
-  const [categories, setCategories] = useState<BlogCategory[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string>('')
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('')
-  const [showPublished, setShowPublished] = useState<'all' | 'published' | 'drafts'>('all')
-  const [mounted, setMounted] = useState(false)
+  const [tools, setTools] = useState<Tool[]>([])
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  useEffect(() => {
-    if (!mounted || authLoading || !isClient) return
-    
-    if (!user) {
-      router.push('/login')
-      return
+    if (!loading) {
+      if (!user) {
+        router.push('/login')
+        return
+      }
+      loadData()
     }
-  }, [mounted, authLoading, user, isClient, router])
+  }, [user, loading, router])
 
-  useEffect(() => {
-    if (!mounted || authLoading || !user || !isClient) return
+  const loadData = async () => {
+    const [fetchedBlogs, fetchedTools] = await Promise.all([
+      fetchBlogs(),
+      fetchTools()
+    ])
+    setBlogs(fetchedBlogs)
+    setTools(fetchedTools)
+  }
 
-    const loadData = async () => {
-      setIsLoading(true)
-      setError('')
+  const handleBlogInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target
+    
+    if (type === 'checkbox') {
+      const checkbox = e.target as HTMLInputElement
+      setBlogForm(prev => ({ ...prev, [name]: checkbox.checked }))
+    } else {
+      setBlogForm(prev => ({ ...prev, [name]: value }))
       
-      try {
-        const [blogsResult, categoriesResult] = await Promise.all([
-          getBlogs({ 
-            search: searchQuery || undefined,
-            category: selectedCategory || undefined,
-            published: showPublished === 'all' ? undefined : showPublished === 'published'
-          }),
-          getBlogCategories()
-        ])
-
-        if (blogsResult.data) setBlogs(blogsResult.data)
-        if (categoriesResult.data) setCategories(categoriesResult.data)
-
-      } catch (error) {
-        setError(error instanceof Error ? error.message : 'Failed to load admin data')
-      } finally {
-        setIsLoading(false)
+      if (name === 'title') {
+        setBlogForm(prev => ({ ...prev, slug: generateSlug(value) }))
       }
     }
+  }
 
-    const timeoutId = setTimeout(loadData, 100)
-    return () => clearTimeout(timeoutId)
-  }, [mounted, authLoading, user, isClient, searchQuery, selectedCategory, showPublished])
-
-  const handleDelete = async (id: string, title: string) => {
-    if (!confirm(`Are you sure you want to delete "${title}"?`)) return
-
-    try {
-      await deleteBlog(id)
-      setBlogs(prev => prev.filter(blog => blog.id !== id))
-    } catch (error) {
-      alert('Failed to delete blog post')
+  const handleToolInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target
+    
+    if (type === 'checkbox') {
+      const checkbox = e.target as HTMLInputElement
+      setToolForm(prev => ({ ...prev, [name]: checkbox.checked }))
+    } else if (name === 'rating') {
+      setToolForm(prev => ({ ...prev, [name]: parseFloat(value) }))
+    } else {
+      setToolForm(prev => ({ ...prev, [name]: value }))
     }
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    })
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'blog' | 'tool') => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploading(true)
+
+    try {
+      const bucket = type === 'blog' ? 'blog-images' : 'tool-images'
+      const imageUrl = await uploadImage(file, bucket)
+      
+      if (imageUrl) {
+        if (type === 'blog') {
+          setBlogForm(prev => ({ ...prev, cover_image: imageUrl }))
+        } else {
+          setToolForm(prev => ({ ...prev, image: imageUrl }))
+        }
+      } else {
+        alert('Failed to upload image')
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error)
+      alert('Failed to upload image')
+    }
+    
+    setUploading(false)
   }
 
-  const stats = {
-    total: blogs.length,
-    published: blogs.filter(b => b.published).length,
-    drafts: blogs.filter(b => !b.published).length,
-    thisMonth: blogs.filter(b => {
-      const blogDate = new Date(b.created_at)
-      const now = new Date()
-      return blogDate.getMonth() === now.getMonth() && blogDate.getFullYear() === now.getFullYear()
-    }).length
+  const handleBlogSubmit = async (e: React.FormEvent) => {
+  e.preventDefault()
+  
+  if (!user || !userData) {
+    alert('You must be logged in to create a blog post')
+    return
   }
 
-  if (!mounted || authLoading) {
+  if (!blogForm.title || !blogForm.content || !blogForm.cover_image) {
+    alert('Please fill in all required fields')
+    return
+  }
+
+  setSaving(true)
+
+  try {
+    const blogData = {
+      title: blogForm.title,
+      slug: blogForm.slug,
+      excerpt: blogForm.excerpt,
+      content: blogForm.content,
+      category: blogForm.category,
+      tags: blogForm.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+      cover_image: blogForm.cover_image,
+      published: blogForm.published
+    }
+
+    const authorData = {
+      name: userData.displayName || user.displayName || 'Admin',
+      email: user.email!,
+      photoURL: user.photoURL || userData.photoURL,
+      uid: user.uid
+    }
+
+    console.log('Submitting blog:', { blogData, authorData })
+
+    const blogId = await createBlog(blogData, authorData)
+    
+    if (blogId) {
+      alert('Blog post created successfully!')
+      setBlogForm({
+        title: '',
+        slug: '',
+        excerpt: '',
+        content: '',
+        category: 'AI Research',
+        tags: '',
+        cover_image: '',
+        published: false
+      })
+      loadData()
+    } else {
+      alert('Failed to create blog post - check console for details')
+    }
+  } catch (error) {
+    console.error('Error in handleBlogSubmit:', error)
+    alert('Failed to create blog post - check console for details')
+  }
+
+  setSaving(false)
+}
+
+
+  const handleToolSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!toolForm.name || !toolForm.description || !toolForm.image || !toolForm.link) {
+      alert('Please fill in all required fields')
+      return
+    }
+
+    setSaving(true)
+
+    try {
+      const toolId = await createTool(toolForm)
+      
+      if (toolId) {
+        alert('Tool created successfully!')
+        setToolForm({
+          name: '',
+          description: '',
+          image: '',
+          link: '',
+          category: 'Writing',
+          rating: 4.5,
+          users: '1.0k',
+          featured: false
+        })
+        loadData()
+      } else {
+        alert('Failed to create tool')
+      }
+    } catch (error) {
+      console.error('Error creating tool:', error)
+      alert('Failed to create tool')
+    }
+
+    setSaving(false)
+  }
+
+  const handleDeleteTool = async (toolId: string) => {
+    if (confirm('Are you sure you want to delete this tool?')) {
+      const success = await deleteTool(toolId)
+      if (success) {
+        alert('Tool deleted successfully!')
+        loadData()
+      } else {
+        alert('Failed to delete tool')
+      }
+    }
+  }
+
+  if (loading) {
     return (
-      <Layout>
-        <div className="min-h-screen bg-gradient-to-br from-paper via-snow to-paper flex items-center justify-center pt-20">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-gradient-infinity rounded-full flex items-center justify-center pulse-glow mx-auto mb-6">
-              <Crown className="w-8 h-8 text-white animate-pulse" />
-            </div>
-            <p className="text-body text-slate">Accessing control center...</p>
-          </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
         </div>
-      </Layout>
+      </div>
     )
   }
 
   if (!user) {
     return (
-      <Layout>
-        <div className="min-h-screen bg-gradient-to-br from-paper via-snow to-paper flex items-center justify-center pt-20">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-gradient-infinity rounded-full flex items-center justify-center pulse-glow mx-auto mb-6">
-              <Crown className="w-8 h-8 text-white animate-spin" />
-            </div>
-            <p className="text-body text-slate">Redirecting to login...</p>
-          </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
+          <p className="text-gray-600">Please log in to access the admin panel.</p>
         </div>
-      </Layout>
-    )
-  }
-
-  if (error) {
-    return (
-      <Layout>
-        <div className="min-h-screen bg-gradient-to-br from-paper via-snow to-paper flex items-center justify-center pt-20">
-          <div className="text-center max-w-md px-6">
-            <div className="text-6xl mb-6">⚠️</div>
-            <h2 className="text-headline text-obsidian mb-4">Control Center Error</h2>
-            <p className="text-body text-slate mb-6">{error}</p>
-            <div className="space-y-3">
-              <button onClick={() => window.location.reload()} className="btn-infinity w-full">
-                Reconnect
-              </button>
-              <button onClick={() => router.push('/tools')} className="btn-growth w-full">
-                Return to Platform
-              </button>
-            </div>
-          </div>
-        </div>
-      </Layout>
-    )
-  }
-
-  if (isLoading) {
-    return (
-      <Layout>
-        <div className="min-h-screen bg-gradient-to-br from-paper via-snow to-paper flex items-center justify-center pt-20">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-gradient-infinity rounded-full flex items-center justify-center pulse-glow mx-auto mb-6">
-              <BarChart3 className="w-8 h-8 text-white animate-bounce" />
-            </div>
-            <p className="text-body text-slate">Loading control center...</p>
-          </div>
-        </div>
-      </Layout>
+      </div>
     )
   }
 
   return (
-    <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-paper via-snow to-paper">
-        
-        {/* Hero Section */}
-        <section className="relative pt-32 pb-16 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-organic opacity-20" />
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex justify-between items-center">
+            <h1 className="text-2xl font-bold text-gray-900">Admin Panel</h1>
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => router.push('/blog')}
+                className="text-violet-600 hover:text-violet-700"
+              >
+                View Blog
+              </button>
+              <button
+                onClick={() => router.push('/tools')}
+                className="text-violet-600 hover:text-violet-700"
+              >
+                View Tools
+              </button>
+            </div>
+          </div>
           
-          <div className="container mx-auto px-6 relative">
-            <div className="grid lg:grid-cols-12 gap-16 items-center">
-              
-              <div className="lg:col-span-7 space-y-8">
-                <div className="space-y-6">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-16 h-16 bg-gradient-infinity rounded-full flex items-center justify-center pulse-glow">
-                      <Crown className="w-8 h-8 text-white" />
-                    </div>
-                    <div>
-                      <span className="text-label text-stone">Content Management</span>
-                      <div className="text-title infinity-gradient font-bold">PsycAi CMS</div>
-                    </div>
-                  </div>
-                  
-                  <h1 className="text-hero">
-                    <span className="infinity-gradient">Content</span>
-                    <br />
-                    <span className="growth-gradient">Control Center</span>
-                  </h1>
-                  
-                  <p className="text-body-lg text-slate max-w-2xl leading-relaxed">
-                    Manage your organization's content strategy from our comprehensive editorial platform. 
-                    Create, publish, and optimize content that drives engagement and showcases innovation.
-                  </p>
-                </div>
-
-                <button 
-                  onClick={() => router.push('/admin/blogs/new')}
-                  className="btn-infinity"
-                >
-                  <Plus className="w-5 h-5 mr-2" />
-                  Create New Article
-                </button>
-              </div>
-
-              <div className="lg:col-span-5">
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="card-organic p-6 hover-lift">
-                    <div className="flex items-center space-x-4 mb-4">
-                      <div className="w-12 h-12 bg-gradient-infinity rounded-2xl flex items-center justify-center">
-                        <FileText className="w-6 h-6 text-white" />
-                      </div>
-                      <div>
-                        <div className="text-display infinity-gradient font-bold">{stats.total}</div>
-                        <div className="text-caption text-stone">Total Articles</div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="card-flow p-6 hover-lift">
-                    <div className="flex items-center space-x-4 mb-4">
-                      <div className="w-12 h-12 bg-gradient-growth rounded-2xl flex items-center justify-center">
-                        <Eye className="w-6 h-6 text-white" />
-                      </div>
-                      <div>
-                        <div className="text-display growth-gradient font-bold">{stats.published}</div>
-                        <div className="text-caption text-stone">Published</div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="card-minimal p-6 hover-lift">
-                    <div className="flex items-center space-x-4 mb-4">
-                      <div className="w-12 h-12 bg-warning rounded-2xl flex items-center justify-center">
-                        <Edit className="w-6 h-6 text-white" />
-                      </div>
-                      <div>
-                        <div className="text-display text-warning font-bold">{stats.drafts}</div>
-                        <div className="text-caption text-stone">In Review</div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="card-organic p-6 hover-lift">
-                    <div className="flex items-center space-x-4 mb-4">
-                      <div className="w-12 h-12 bg-success rounded-2xl flex items-center justify-center">
-                        <TrendingUp className="w-6 h-6 text-white" />
-                      </div>
-                      <div>
-                        <div className="text-display text-success font-bold">{stats.thisMonth}</div>
-                        <div className="text-caption text-stone">This Quarter</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+          {/* Tabs */}
+          <div className="flex space-x-8 mt-4">
+            <button
+              onClick={() => setActiveTab('blogs')}
+              className={`flex items-center space-x-2 py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'blogs'
+                  ? 'border-violet-500 text-violet-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <FileText className="w-4 h-4" />
+              <span>Manage Blogs</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('tools')}
+              className={`flex items-center space-x-2 py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'tools'
+                  ? 'border-violet-500 text-violet-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <Settings className="w-4 h-4" />
+              <span>Manage Tools</span>
+            </button>
           </div>
-        </section>
-
-        {/* Filter Section */}
-        <section className="py-16">
-          <div className="container mx-auto px-6">
-            <div className="card-flow p-8">
-              <div className="grid lg:grid-cols-4 gap-8">
-                
-                <div className="lg:col-span-2 space-y-4">
-                  <label className="text-label text-stone flex items-center space-x-2">
-                    <Search className="w-4 h-4" />
-                    <span>Content Library</span>
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Search articles, drafts, or ideas..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full px-4 py-4 bg-snow border-2 border-mist rounded-2xl focus:border-infinity focus:outline-none transition-all text-body"
-                  />
-                </div>
-
-                <div className="space-y-4">
-                  <label className="text-label text-stone flex items-center space-x-2">
-                    <Filter className="w-4 h-4" />
-                    <span>Topic Categories</span>
-                  </label>
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="w-full px-4 py-4 bg-snow border-2 border-mist rounded-2xl focus:border-infinity focus:outline-none transition-all text-body"
-                  >
-                    <option value="">All Topics</option>
-                    {categories.map((cat) => (
-                      <option key={cat.id} value={cat.slug}>
-                        {cat.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="space-y-4">
-                  <label className="text-label text-stone flex items-center space-x-2">
-                    <Settings className="w-4 h-4" />
-                    <span>Publication Status</span>
-                  </label>
-                  <select
-                    value={showPublished}
-                    onChange={(e) => setShowPublished(e.target.value as 'all' | 'published' | 'drafts')}
-                    className="w-full px-4 py-4 bg-snow border-2 border-mist rounded-2xl focus:border-infinity focus:outline-none transition-all text-body"
-                  >
-                    <option value="all">All Status ({stats.total})</option>
-                    <option value="published">Published ({stats.published})</option>
-                    <option value="drafts">In Review ({stats.drafts})</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Content Grid */}
-        <section className="pb-16">
-          <div className="container mx-auto px-6">
-            {blogs.length === 0 ? (
-              <div className="text-center py-20">
-                <div className="w-24 h-24 bg-mist rounded-full flex items-center justify-center mx-auto mb-8 float-animation">
-                  <Sparkles className="w-12 h-12 text-stone" />
-                </div>
-                <h3 className="text-headline text-obsidian mb-4">
-                  {searchQuery || selectedCategory ? 'No matching content' : 'Content library awaits'}
-                </h3>
-                <p className="text-body text-slate mb-8 max-w-md mx-auto">
-                  {searchQuery || selectedCategory 
-                    ? 'Try adjusting your search or explore different topics.' 
-                    : 'Start building your content library with insights, tutorials, and company updates.'}
-                </p>
-                <div className="flex justify-center space-x-4">
-                  {!searchQuery && !selectedCategory ? (
-                    <button
-                      onClick={() => router.push('/admin/blogs/new')}
-                      className="btn-infinity"
-                    >
-                      <Plus className="w-5 h-5 mr-2" />
-                      Create First Article
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        setSearchQuery('')
-                        setSelectedCategory('')
-                        setShowPublished('all')
-                      }}
-                      className="btn-growth"
-                    >
-                      View All Content
-                    </button>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {blogs.map((blog, index) => {
-                  const categoryObj = categories.find(c => c.slug === blog.category)
-                  
-                  return (
-                    <div key={blog.id} className="card-organic p-8 hover-lift transition-all duration-300">
-                      <div className="grid lg:grid-cols-12 gap-8 items-center">
-                        
-                        <div className="lg:col-span-8 space-y-4">
-                          <div className="flex items-center space-x-4">
-                            <div className="flex items-center space-x-3">
-                              <h3 className="text-title text-obsidian hover:text-infinity transition-colors cursor-pointer">
-                                {blog.title}
-                              </h3>
-                              <span className={`px-3 py-1 text-xs font-medium rounded-full ${
-                                blog.published 
-                                  ? 'bg-success text-white' 
-                                  : 'bg-warning text-white'
-                              }`}>
-                                {blog.published ? 'Published' : 'In Review'}
-                              </span>
-                            </div>
-                            {categoryObj && (
-                              <span 
-                                className="px-3 py-1 text-xs font-medium rounded-full text-white"
-                                style={{ backgroundColor: categoryObj.color }}
-                              >
-                                {categoryObj.name}
-                              </span>
-                            )}
-                          </div>
-
-                          {blog.excerpt && (
-                            <p className="text-body text-slate line-clamp-2 leading-relaxed">
-                              {blog.excerpt}
-                            </p>
-                          )}
-
-                          <div className="flex items-center space-x-6 text-caption text-stone">
-                            <div className="flex items-center space-x-2">
-                              <Calendar className="w-3 h-3" />
-                              <span>{formatDate(blog.created_at)}</span>
-                            </div>
-                            {blog.tags.length > 0 && (
-                              <div className="flex items-center space-x-2">
-                                <span>Tags:</span>
-                                <span>{blog.tags.slice(0, 3).join(', ')}</span>
-                                {blog.tags.length > 3 && <span>+{blog.tags.length - 3}</span>}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="lg:col-span-4 flex items-center justify-end space-x-3">
-                          {blog.published && (
-                            <button
-                              onClick={() => window.open(`/blog/${blog.slug}`, '_blank')}
-                              className="p-3 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 hover:scale-110 transition-all"
-                              title="View published article"
-                            >
-                              <Eye className="w-5 h-5" />
-                            </button>
-                          )}
-                          <button
-                            onClick={() => router.push(`/admin/blogs/edit/${blog.id}`)}
-                            className="p-3 bg-infinity/10 text-infinity rounded-xl hover:bg-infinity hover:text-white hover:scale-110 transition-all"
-                            title="Edit article"
-                          >
-                            <Edit className="w-5 h-5" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(blog.id, blog.title)}
-                            className="p-3 bg-red-50 text-danger rounded-xl hover:bg-danger hover:text-white hover:scale-110 transition-all"
-                            title="Delete article"
-                          >
-                            <Trash2 className="w-5 h-5" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-        </section>
+        </div>
       </div>
-    </Layout>
+
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {activeTab === 'blogs' ? (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Blog Form */}
+            <div className="lg:col-span-2">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-6">Create New Blog Post</h2>
+                
+                <form onSubmit={handleBlogSubmit} className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Title *</label>
+                    <input
+                      type="text"
+                      name="title"
+                      value={blogForm.title}
+                      onChange={handleBlogInputChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Slug *</label>
+                    <input
+                      type="text"
+                      name="slug"
+                      value={blogForm.slug}
+                      onChange={handleBlogInputChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      required
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                      <select
+                        name="category"
+                        value={blogForm.category}
+                        onChange={handleBlogInputChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      >
+                        <option value="AI Research">AI Research</option>
+                        <option value="Deep Learning">Deep Learning</option>
+                        <option value="Quantum Tech">Quantum Tech</option>
+                        <option value="AI Ethics">AI Ethics</option>
+                        <option value="Blockchain">Blockchain</option>
+                        <option value="Cloud Tech">Cloud Tech</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Tags (comma separated)</label>
+                      <input
+                        type="text"
+                        name="tags"
+                        value={blogForm.tags}
+                        onChange={handleBlogInputChange}
+                        placeholder="AI, Machine Learning, Tech"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Cover Image *</label>
+                    <div className="space-y-3">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleImageUpload(e, 'blog')}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      />
+                      {uploading && (
+                        <div className="flex items-center space-x-2 text-violet-600">
+                          <Upload className="w-4 h-4 animate-bounce" />
+                          <span className="text-sm">Uploading to Supabase...</span>
+                        </div>
+                      )}
+                      {blogForm.cover_image && (
+                        <img
+                          src={blogForm.cover_image}
+                          alt="Cover preview"
+                          className="w-full h-48 object-cover rounded-lg"
+                        />
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Excerpt *</label>
+                    <textarea
+                      name="excerpt"
+                      value={blogForm.excerpt}
+                      onChange={handleBlogInputChange}
+                      rows={3}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Content * (HTML/Markdown)</label>
+                    <textarea
+                      name="content"
+                      value={blogForm.content}
+                      onChange={handleBlogInputChange}
+                      rows={15}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 font-mono text-sm"
+                      required
+                    />
+                  </div>
+
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      name="published"
+                      checked={blogForm.published}
+                      onChange={handleBlogInputChange}
+                      className="h-4 w-4 text-violet-600 rounded border-gray-300 focus:ring-violet-500"
+                    />
+                    <label className="ml-2 text-sm font-medium text-gray-700">Publish immediately</label>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={saving || uploading}
+                    className="w-full bg-violet-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                  >
+                    {saving ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        <span>Saving...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4" />
+                        <span>Save Blog Post</span>
+                      </>
+                    )}
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            {/* Published Blogs */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">Published Blogs</h2>
+              
+              <div className="space-y-4">
+                {blogs.map((blog) => (
+                  <div key={blog.id} className="border border-gray-200 rounded-lg p-4">
+                    <h3 className="font-medium text-gray-900 mb-1 line-clamp-2">{blog.title}</h3>
+                    <p className="text-sm text-gray-600 mb-2">{blog.category} • {blog.views} views</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500">
+                        {new Date(blog.created_at).toLocaleDateString()}
+                      </span>
+                      <button
+                        onClick={() => router.push(`/blog/${blog.slug}`)}
+                        className="text-violet-600 hover:text-violet-700 text-sm"
+                      >
+                        View
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Tool Form */}
+            <div className="lg:col-span-2">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-6">Create New Tool</h2>
+                
+                <form onSubmit={handleToolSubmit} className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Tool Name *</label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={toolForm.name}
+                      onChange={handleToolInputChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Description *</label>
+                    <textarea
+                      name="description"
+                      value={toolForm.description}
+                      onChange={handleToolInputChange}
+                      rows={3}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Tool Link *</label>
+                    <input
+                      type="url"
+                      name="link"
+                      value={toolForm.link}
+                      onChange={handleToolInputChange}
+                      placeholder="https://example.com"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      required
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                      <select
+                        name="category"
+                        value={toolForm.category}
+                        onChange={handleToolInputChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      >
+                        <option value="Writing">Writing</option>
+                        <option value="Design">Design</option>
+                        <option value="Audio">Audio</option>
+                        <option value="Development">Development</option>
+                        <option value="Analytics">Analytics</option>
+                        <option value="Media">Media</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+                      <input
+                        type="number"
+                        name="rating"
+                        value={toolForm.rating}
+                        onChange={handleToolInputChange}
+                        min="1"
+                        max="5"
+                        step="0.1"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Users</label>
+                      <input
+                        type="text"
+                        name="users"
+                        value={toolForm.users}
+                        onChange={handleToolInputChange}
+                        placeholder="1.2k"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Tool Image *</label>
+                    <div className="space-y-3">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleImageUpload(e, 'tool')}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      />
+                      {uploading && (
+                        <div className="flex items-center space-x-2 text-violet-600">
+                          <Upload className="w-4 h-4 animate-bounce" />
+                          <span className="text-sm">Uploading to Supabase...</span>
+                        </div>
+                      )}
+                      {toolForm.image && (
+                        <img
+                          src={toolForm.image}
+                          alt="Tool preview"
+                          className="w-full h-48 object-cover rounded-lg"
+                        />
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      name="featured"
+                      checked={toolForm.featured}
+                      onChange={handleToolInputChange}
+                      className="h-4 w-4 text-violet-600 rounded border-gray-300 focus:ring-violet-500"
+                    />
+                    <label className="ml-2 text-sm font-medium text-gray-700">Feature this tool</label>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={saving || uploading}
+                    className="w-full bg-violet-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                  >
+                    {saving ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        <span>Saving...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="w-4 h-4" />
+                        <span>Add Tool</span>
+                      </>
+                    )}
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            {/* Published Tools */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">Published Tools</h2>
+              
+              <div className="space-y-4">
+                {tools.map((tool) => (
+                  <div key={tool.id} className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-start space-x-3">
+                      <img
+                        src={tool.image}
+                        alt={tool.name}
+                        className="w-12 h-12 object-cover rounded-lg"
+                      />
+                      <div className="flex-1">
+                        <h3 className="font-medium text-gray-900 mb-1">{tool.name}</h3>
+                        <p className="text-sm text-gray-600 mb-2">{tool.category}</p>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-gray-500">★ {tool.rating}</span>
+                          <div className="flex items-center space-x-2">
+                            <a
+                              href={tool.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-violet-600 hover:text-violet-700 text-sm"
+                            >
+                              View
+                            </a>
+                            <button
+                              onClick={() => handleDeleteTool(tool.id)}
+                              className="text-red-600 hover:text-red-700 text-sm"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   )
 }

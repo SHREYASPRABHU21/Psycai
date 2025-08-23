@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { AITool } from '@/lib/aiTools'
+import { AITool } from '@/lib/tools'
 import { 
   ExternalLink, 
   Github, 
