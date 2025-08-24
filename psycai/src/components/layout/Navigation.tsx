@@ -55,9 +55,13 @@ export default function Navbar() {
         <div className="flex justify-between items-center py-6">
           
           {/* Logo */}
-          <Link href="/" className="flex items-center">
-            <span className="text-xl font-bold text-gray-900">PsycAi</span>
-          </Link>
+          <Link href="/" className="flex items-center space-x-2">
+  <img 
+    src="/psycai-logo.png" 
+    alt="PsycAi" 
+    className="h-8 w-auto"
+  />
+</Link>
 
           {/* Navigation Links */}
           <nav className="hidden md:flex items-center space-x-8">
