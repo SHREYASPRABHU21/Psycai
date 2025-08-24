@@ -10,7 +10,14 @@ import { fetchBlogBySlug } from '@/lib/supabase-blog'
 import { Blog } from '@/lib/supabase'
 import Link from 'next/link'
 
-export default function BlogPost({ params }: { params: { slug: string } }) {
+
+interface BlogPostProps {
+  params: {
+    slug: string;
+  };
+}
+
+export default function BlogPost({ params }: BlogPostProps) {
   const { user, loading } = useAuth()
   const router = useRouter()
   const [blog, setBlog] = useState<Blog | null>(null)
