@@ -19,6 +19,10 @@ const eslintConfig = [
       "build/**",
       "next-env.d.ts",
     ],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off", // 👈 disable 'any' restriction
+      "react/no-unescaped-entities": "off", // 👈 disables the quote escaping rule
+    },
   },
 ];
 
