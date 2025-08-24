@@ -11,8 +11,8 @@ import { fetchBlogs } from '@/lib/supabase-blog'
 import { Blog } from '@/lib/supabase'
 import Link from 'next/link'
 
-const categories = ['All', 'AI Research', 'Deep Learning', 'Quantum Tech', 'AI Ethics', 'Blockchain', 'Cloud Tech']
 const sortOptions = ['Newest', 'Oldest', 'Most Popular', 'Most Read']
+const BLOG_CATEGORIES = ['All', 'Marketing', 'Business', 'AI']
 
 export default function BlogPage() {
   const { user, loading } = useAuth()
@@ -25,6 +25,12 @@ export default function BlogPage() {
   const [filteredBlogs, setFilteredBlogs] = useState<Blog[]>([])
   const [blogsLoading, setBlogsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login')
+    }
+  }, [user, loading, router])
 
   useEffect(() => {
     trackPageView('Blog Page', 'AI Tech Blog')
@@ -84,6 +90,21 @@ export default function BlogPage() {
     })
   }
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return null
+  }
+
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section with Featured Blog */}
@@ -98,13 +119,13 @@ export default function BlogPage() {
                   alt="Hero"
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/50"></div>
               </>
             )}
           </div>
         </div>
 
         {/* Navigation Bar Overlay */}
+                {/* Navigation Bar Overlay */}
         <header className="relative z-20">
           <div className="px-6">
             <div className="flex justify-between items-center py-5">
@@ -119,30 +140,16 @@ export default function BlogPage() {
                 </div>
               </div>
 
-              {/* Navigation Links */}
-              <nav className="hidden lg:flex items-center space-x-8">
-                <Link href="/tools" className="text-white/90 hover:text-white transition-colors font-normal">Tools</Link>
+              {/* Centered Navigation Links */}
+              <nav className="absolute left-1/2 transform -translate-x-1/2 hidden lg:flex items-center space-x-8">
+                <Link href="/" className="text-white/90 hover:text-white transition-colors font-normal">Home</Link>
+                <Link href="/products" className="text-white/90 hover:text-white transition-colors font-normal">Products</Link>
                 <Link href="/blog" className="text-white hover:text-white transition-colors font-medium">Blog</Link>
-                <Link href="/about" className="text-white/90 hover:text-white transition-colors font-normal">About</Link>
                 <Link href="/contact" className="text-white/90 hover:text-white transition-colors font-normal">Contact</Link>
-                {user && (
-                  <Link href="/admin/blogs" className="text-white/90 hover:text-white transition-colors font-normal">Admin</Link>
-                )}
               </nav>
 
-              {/* Search and User Actions */}
+              {/* User Actions */}
               <div className="flex items-center space-x-4">
-                <div className="hidden md:flex relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-4 h-4" />
-                  <input
-                    type="text"
-                    placeholder="Search articles..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 pr-4 py-2.5 w-64 bg-white/15 backdrop-blur-sm border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/30 text-sm"
-                  />
-                </div>
-
                 <div className="flex items-center space-x-1 text-white/80">
                   <Globe className="w-4 h-4" />
                   <span className="text-sm font-medium">EN</span>
@@ -170,6 +177,7 @@ export default function BlogPage() {
             </div>
           </div>
         </header>
+
 
         {/* Hero Content */}
         {featuredBlogs.length > 0 && (
@@ -216,8 +224,22 @@ export default function BlogPage() {
         <div className="px-6 mb-12">
           <h2 className="text-3xl font-medium text-gray-900 mb-4 tracking-tight">Blog</h2>
           <p className="text-base text-gray-600 max-w-2xl font-normal leading-relaxed">
-            Here, we share AI insights, technology trends, and innovations that shape the future of digital transformation.
+            Here, we share insights, trends, and innovations that shape the future of business and AI.
           </p>
+        </div>
+
+        {/* Search Bar */}
+        <div className="px-6 mb-8">
+          <div className="relative max-w-md">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <input
+              type="text"
+              placeholder="Search articles..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-base"
+            />
+          </div>
         </div>
 
         {/* Filters and Sort */}
@@ -225,7 +247,7 @@ export default function BlogPage() {
           
           {/* Category Filters */}
           <div className="flex flex-wrap gap-2">
-            {categories.map((category) => (
+            {BLOG_CATEGORIES.map((category) => (
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category)}
@@ -269,16 +291,13 @@ export default function BlogPage() {
           </div>
         </div>
 
-        {/* Blog Posts Grid */}
+                {/* Blog Posts Grid */}
         <div className="px-6">
           {blogsLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div key={i} className="animate-pulse">
-                  <div className="bg-gray-200 h-48 rounded-lg mb-4"></div>
-                  <div className="bg-gray-200 h-4 rounded mb-2"></div>
-                  <div className="bg-gray-200 h-3 rounded mb-2"></div>
-                  <div className="bg-gray-200 h-3 rounded w-3/4"></div>
+                  <div className="bg-gray-200 aspect-square rounded-lg"></div>
                 </div>
               ))}
             </div>
@@ -288,39 +307,44 @@ export default function BlogPage() {
                 <Link key={blog.id} href={`/blog/${blog.slug}`}>
                   <article className="group cursor-pointer">
                     
-                    {/* Post Image */}
-                    <div className="relative mb-4 overflow-hidden rounded-lg">
+                    {/* Square Blog Image with Text Overlay */}
+                    <div className="relative aspect-square overflow-hidden rounded-lg">
                       <img
                         src={blog.cover_image}
                         alt={blog.title}
-                        className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
-                      <div className="absolute top-4 left-4">
-                        <span className="bg-white/90 backdrop-blur-sm text-gray-900 px-3 py-1 rounded-full text-xs font-medium">
-                          {blog.category}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Post Content */}
-                    <div className="space-y-3">
-                      <h3 className="text-xl font-medium text-gray-900 group-hover:text-violet-600 transition-colors leading-snug tracking-tight">
-                        {blog.title}
-                      </h3>
                       
-                      <p className="text-gray-600 leading-relaxed text-sm font-normal line-clamp-3">
-                        {blog.excerpt}
-                      </p>
-
-                      {/* Post Meta */}
-                      <div className="flex items-center justify-between text-xs text-gray-500">
-                        <div className="flex items-center space-x-2">
-                          <User className="w-3 h-3" />
-                          <span>{blog.author_name}</span>
+                      {/* Content Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent p-6 flex flex-col justify-between">
+                        
+                        {/* Category */}
+                        <div className="flex justify-start">
+                          <span className="bg-white/20 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-medium">
+                            {blog.category}
+                          </span>
                         </div>
-                        <div className="flex items-center space-x-1">
-                          <Calendar className="w-3 h-3" />
-                          <span>{formatDate(blog.created_at)}</span>
+
+                        {/* Blog Info */}
+                        <div>
+                          <h3 className="text-white font-semibold text-lg mb-2 group-hover:text-yellow-200 transition-colors line-clamp-2">
+                            {blog.title}
+                          </h3>
+                          <p className="text-white/90 text-sm leading-relaxed line-clamp-3 mb-3">
+                            {blog.excerpt}
+                          </p>
+                          
+                          {/* Post Meta */}
+                          <div className="flex items-center justify-between text-xs text-white/70">
+                            <div className="flex items-center space-x-2">
+                              <User className="w-3 h-3" />
+                              <span>{blog.author_name}</span>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <Calendar className="w-3 h-3" />
+                              <span>{formatDate(blog.created_at)}</span>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -335,6 +359,7 @@ export default function BlogPage() {
             </div>
           )}
         </div>
+
       </div>
 
       <Footer />

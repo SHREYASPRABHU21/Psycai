@@ -1,17 +1,35 @@
 @import "tailwindcss";
+
 @plugin "@tailwindcss/typography";
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap');
 
 
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+/* Force Inter font on everything */
+* {
+  font-family: var(--font-inter), 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
 
 html {
-  font-family: var(--font-body);
+  font-family: var(--font-inter), 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
 }
 
 body {
-  font-family: var(--font-body);
+  font-family: var(--font-inter), 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
   font-feature-settings: "cv11", "ss01";
   font-variation-settings: "opsz" 32;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-inter), 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+input, textarea, select, button {
+  font-family: var(--font-inter), 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
 }
 
 /* Custom scrollbar */
@@ -32,6 +50,64 @@ body {
   background: #a8a8a8;
 }
 
+@theme {
+  /* Core Brand Colors */
+  --color-infinity: hsl(255, 71%, 65%);
+  --color-growth: hsl(280, 100%, 75%);
+  --color-root: hsl(240, 71%, 55%);
+  --color-branch: hsl(290, 60%, 70%);
+  --color-leaf: hsl(200, 100%, 80%);
+
+  /* Neutral System */
+  --color-obsidian: hsl(220, 15%, 8%);
+  --color-slate: hsl(220, 15%, 25%);
+  --color-stone: hsl(220, 10%, 50%);
+  --color-mist: hsl(220, 10%, 85%);
+  --color-snow: hsl(220, 20%, 98%);
+  --color-paper: hsl(0, 0%, 100%);
+
+  /* Semantic Colors */
+  --color-success: hsl(150, 70%, 50%);
+  --color-warning: hsl(35, 90%, 55%);
+  --color-danger: hsl(0, 75%, 55%);
+
+  /* Typography */
+  --font-display: var(--font-inter), 'Inter', sans-serif;
+  --font-body: var(--font-inter), 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+/* Rest of your existing styles... */
+
+/* 
+
+html {
+  font-family: var(--font-inter), var(--font-body), system-ui, -apple-system, sans-serif;
+} */
+/* 
+body {
+  font-family: var(--font-inter), var(--font-body), system-ui, -apple-system, sans-serif;
+  font-feature-settings: "cv11", "ss01";
+  font-variation-settings: "opsz" 32;
+} */
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
 
 @theme {
   /* Core Brand Colors */
@@ -40,7 +116,7 @@ body {
   --color-root: hsl(240, 71%, 55%);
   --color-branch: hsl(290, 60%, 70%);
   --color-leaf: hsl(200, 100%, 80%);
-  
+
   /* Neutral System */
   --color-obsidian: hsl(220, 15%, 8%);
   --color-slate: hsl(220, 15%, 25%);
@@ -48,21 +124,21 @@ body {
   --color-mist: hsl(220, 10%, 85%);
   --color-snow: hsl(220, 20%, 98%);
   --color-paper: hsl(0, 0%, 100%);
-  
+
   /* Semantic Colors */
   --color-success: hsl(150, 70%, 50%);
   --color-warning: hsl(35, 90%, 55%);
   --color-danger: hsl(0, 75%, 55%);
-  
+
   /* Gradients */
   --gradient-infinity: linear-gradient(135deg, var(--color-infinity), var(--color-root));
   --gradient-growth: linear-gradient(160deg, var(--color-growth), var(--color-branch));
   --gradient-organic: radial-gradient(ellipse at top, var(--color-infinity), transparent 70%);
   --gradient-flow: linear-gradient(45deg, var(--color-leaf), var(--color-growth), var(--color-infinity));
-  
-  /* Typography */
-  --font-display: 'Space Grotesk', sans-serif;
-  --font-body: 'Inter', sans-serif;
+
+  /* Typography - Updated to use Inter */
+  --font-display: var(--font-inter), 'Inter', sans-serif;
+  --font-body: var(--font-inter), 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
   
   --text-hero: clamp(2.5rem, 8vw, 5rem);
@@ -72,7 +148,7 @@ body {
   --text-body: 1rem;
   --text-caption: 0.875rem;
   --text-label: 0.75rem;
-  
+
   /* Shadows */
   --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
   --shadow-gentle: 0 3px 6px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.12);
@@ -88,7 +164,7 @@ body {
 }
 
 html {
-  font-family: var(--font-body);
+  /* font-family: var(--font-inter), var(--font-body), system-ui, -apple-system, sans-serif; */
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -98,11 +174,12 @@ html {
 body {
   background: var(--color-paper);
   color: var(--color-obsidian);
+  font-family: var(--font-inter), var(--font-body), system-ui, -apple-system, sans-serif;
 }
 
-/* Typography System */
+/* Typography System - All updated to use Inter */
 .text-hero {
-  font-family: var(--font-display);
+  font-family: var(--font-inter), var(--font-display), system-ui, sans-serif;
   font-size: var(--text-hero);
   font-weight: 700;
   line-height: 0.9;
@@ -110,7 +187,7 @@ body {
 }
 
 .text-display {
-  font-family: var(--font-display);
+  font-family: var(--font-inter), var(--font-display), system-ui, sans-serif;
   font-size: var(--text-display);
   font-weight: 600;
   line-height: 1.1;
@@ -118,7 +195,7 @@ body {
 }
 
 .text-headline {
-  font-family: var(--font-display);
+  font-family: var(--font-inter), var(--font-display), system-ui, sans-serif;
   font-size: var(--text-headline);
   font-weight: 600;
   line-height: 1.2;
@@ -126,40 +203,50 @@ body {
 }
 
 .text-title {
-  font-family: var(--font-body);
+  font-family: var(--font-inter), var(--font-body), system-ui, sans-serif;
   font-size: var(--text-title);
   font-weight: 600;
   line-height: 1.3;
 }
 
 .text-body {
-  font-family: var(--font-body);
+  font-family: var(--font-inter), var(--font-body), system-ui, sans-serif;
   font-size: var(--text-body);
   font-weight: 400;
   line-height: 1.6;
 }
 
 .text-body-lg {
-  font-family: var(--font-body);
+  font-family: var(--font-inter), var(--font-body), system-ui, sans-serif;
   font-size: 1.125rem;
   font-weight: 400;
   line-height: 1.6;
 }
 
 .text-caption {
-  font-family: var(--font-body);
+  font-family: var(--font-inter), var(--font-body), system-ui, sans-serif;
   font-size: var(--text-caption);
   font-weight: 500;
   line-height: 1.4;
 }
 
 .text-label {
-  font-family: var(--font-body);
+  font-family: var(--font-inter), var(--font-body), system-ui, sans-serif;
   font-size: var(--text-label);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   line-height: 1.2;
+}
+
+/* Ensure all headings use Inter */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-inter), var(--font-body), system-ui, -apple-system, sans-serif;
+}
+
+/* Ensure all text inputs, buttons, and form elements use Inter */
+input, textarea, select, button {
+  font-family: var(--font-inter), var(--font-body), system-ui, -apple-system, sans-serif;
 }
 
 /* Brand Elements */
@@ -227,7 +314,7 @@ body {
   border: none;
   border-radius: 16px;
   padding: 16px 32px;
-  font-family: var(--font-body);
+  font-family: var(--font-inter), var(--font-body), system-ui, sans-serif;
   font-weight: 600;
   font-size: var(--text-body);
   cursor: pointer;
@@ -250,7 +337,7 @@ body {
   border: 2px solid var(--color-infinity);
   border-radius: 12px;
   padding: 14px 28px;
-  font-family: var(--font-body);
+  font-family: var(--font-inter), var(--font-body), system-ui, sans-serif;
   font-weight: 600;
   font-size: var(--text-body);
   cursor: pointer;
@@ -273,7 +360,7 @@ body {
   border: 1px solid var(--color-mist);
   border-radius: 8px;
   padding: 12px 24px;
-  font-family: var(--font-body);
+  font-family: var(--font-inter), var(--font-body), system-ui, sans-serif;
   font-weight: 500;
   font-size: var(--text-caption);
   cursor: pointer;
@@ -351,4 +438,3 @@ body {
   .text-display { font-size: 2rem; }
   .text-headline { font-size: 1.5rem; }
 }
-

@@ -4,16 +4,17 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import { createBlog, generateSlug, fetchBlogs } from '@/lib/supabase-blog'
-import { createTool, fetchTools, deleteTool } from '@/lib/supabase-tools'
+import { createProduct, fetchProducts, deleteProduct } from '@/lib/supabase-tools'
 import { uploadImage } from '@/lib/supabase-storage'
 import { Blog, Tool } from '@/lib/supabase'
 import { Save, Upload, Plus, Settings, FileText, Trash2 } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
 
 export default function AdminPage() {
   const { user, userData, loading } = useAuth()
   const router = useRouter()
   
-  const [activeTab, setActiveTab] = useState<'blogs' | 'tools'>('blogs')
+  const [activeTab, setActiveTab] = useState<'blogs' | 'products'>('blogs')
   
   // Blog form state
   const [blogForm, setBlogForm] = useState({
@@ -21,19 +22,19 @@ export default function AdminPage() {
     slug: '',
     excerpt: '',
     content: '',
-    category: 'AI Research',
+    category: 'Marketing',
     tags: '',
     cover_image: '',
     published: false
   })
   
-  // Tool form state
-  const [toolForm, setToolForm] = useState({
+  // Product form state (renamed from tool)
+  const [productForm, setProductForm] = useState({
     name: '',
     description: '',
     image: '',
     link: '',
-    category: 'Writing',
+    category: 'Personal Growth',
     rating: 4.5,
     users: '1.0k',
     featured: false
@@ -42,7 +43,11 @@ export default function AdminPage() {
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [blogs, setBlogs] = useState<Blog[]>([])
-  const [tools, setTools] = useState<Tool[]>([])
+  const [products, setProducts] = useState<Tool[]>([])
+
+  // Updated categories
+  const blogCategories = ['Marketing', 'Business', 'AI']
+  const productCategories = ['Personal Growth', 'Entertainment', 'Work', 'Research', 'Creativity']
 
   useEffect(() => {
     if (!loading) {
@@ -55,12 +60,12 @@ export default function AdminPage() {
   }, [user, loading, router])
 
   const loadData = async () => {
-    const [fetchedBlogs, fetchedTools] = await Promise.all([
+    const [fetchedBlogs, fetchedProducts] = await Promise.all([
       fetchBlogs(),
-      fetchTools()
+      fetchProducts()
     ])
     setBlogs(fetchedBlogs)
-    setTools(fetchedTools)
+    setProducts(fetchedProducts)
   }
 
   const handleBlogInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -78,20 +83,20 @@ export default function AdminPage() {
     }
   }
 
-  const handleToolInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleProductInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target
     
     if (type === 'checkbox') {
       const checkbox = e.target as HTMLInputElement
-      setToolForm(prev => ({ ...prev, [name]: checkbox.checked }))
+      setProductForm(prev => ({ ...prev, [name]: checkbox.checked }))
     } else if (name === 'rating') {
-      setToolForm(prev => ({ ...prev, [name]: parseFloat(value) }))
+      setProductForm(prev => ({ ...prev, [name]: parseFloat(value) }))
     } else {
-      setToolForm(prev => ({ ...prev, [name]: value }))
+      setProductForm(prev => ({ ...prev, [name]: value }))
     }
   }
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'blog' | 'tool') => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'blog' | 'product') => {
     const file = e.target.files?.[0]
     if (!file) return
 
@@ -105,7 +110,7 @@ export default function AdminPage() {
         if (type === 'blog') {
           setBlogForm(prev => ({ ...prev, cover_image: imageUrl }))
         } else {
-          setToolForm(prev => ({ ...prev, image: imageUrl }))
+          setProductForm(prev => ({ ...prev, image: imageUrl }))
         }
       } else {
         alert('Failed to upload image')
@@ -119,72 +124,14 @@ export default function AdminPage() {
   }
 
   const handleBlogSubmit = async (e: React.FormEvent) => {
-  e.preventDefault()
-  
-  if (!user || !userData) {
-    alert('You must be logged in to create a blog post')
-    return
-  }
-
-  if (!blogForm.title || !blogForm.content || !blogForm.cover_image) {
-    alert('Please fill in all required fields')
-    return
-  }
-
-  setSaving(true)
-
-  try {
-    const blogData = {
-      title: blogForm.title,
-      slug: blogForm.slug,
-      excerpt: blogForm.excerpt,
-      content: blogForm.content,
-      category: blogForm.category,
-      tags: blogForm.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
-      cover_image: blogForm.cover_image,
-      published: blogForm.published
-    }
-
-    const authorData = {
-      name: userData.displayName || user.displayName || 'Admin',
-      email: user.email!,
-      photoURL: user.photoURL || userData.photoURL,
-      uid: user.uid
-    }
-
-    console.log('Submitting blog:', { blogData, authorData })
-
-    const blogId = await createBlog(blogData, authorData)
-    
-    if (blogId) {
-      alert('Blog post created successfully!')
-      setBlogForm({
-        title: '',
-        slug: '',
-        excerpt: '',
-        content: '',
-        category: 'AI Research',
-        tags: '',
-        cover_image: '',
-        published: false
-      })
-      loadData()
-    } else {
-      alert('Failed to create blog post - check console for details')
-    }
-  } catch (error) {
-    console.error('Error in handleBlogSubmit:', error)
-    alert('Failed to create blog post - check console for details')
-  }
-
-  setSaving(false)
-}
-
-
-  const handleToolSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!toolForm.name || !toolForm.description || !toolForm.image || !toolForm.link) {
+    if (!user || !userData) {
+      alert('You must be logged in to create a blog post')
+      return
+    }
+
+    if (!blogForm.title || !blogForm.content || !blogForm.cover_image) {
       alert('Please fill in all required fields')
       return
     }
@@ -192,40 +139,116 @@ export default function AdminPage() {
     setSaving(true)
 
     try {
-      const toolId = await createTool(toolForm)
+      const blogData = {
+        title: blogForm.title,
+        slug: blogForm.slug,
+        excerpt: blogForm.excerpt,
+        content: blogForm.content,
+        category: blogForm.category,
+        tags: blogForm.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+        cover_image: blogForm.cover_image,
+        published: blogForm.published
+      }
+
+      const authorData = {
+        name: userData.displayName || user.displayName || 'Admin',
+        email: user.email!,
+        photoURL: user.photoURL || userData.photoURL,
+        uid: user.uid
+      }
+
+      console.log('Submitting blog:', { blogData, authorData })
+
+      const blogId = await createBlog(blogData, authorData)
       
-      if (toolId) {
-        alert('Tool created successfully!')
-        setToolForm({
+      if (blogId) {
+        alert('Blog post created successfully!')
+        setBlogForm({
+          title: '',
+          slug: '',
+          excerpt: '',
+          content: '',
+          category: 'Marketing',
+          tags: '',
+          cover_image: '',
+          published: false
+        })
+        loadData()
+      } else {
+        alert('Failed to create blog post - check console for details')
+      }
+    } catch (error) {
+      console.error('Error in handleBlogSubmit:', error)
+      alert('Failed to create blog post - check console for details')
+    }
+
+    setSaving(false)
+  }
+
+  const handleProductSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!productForm.name || !productForm.description || !productForm.image || !productForm.link) {
+      alert('Please fill in all required fields')
+      return
+    }
+
+    setSaving(true)
+
+    try {
+      const productId = await createProduct(productForm)
+      
+      if (productId) {
+        alert('Product created successfully!')
+        setProductForm({
           name: '',
           description: '',
           image: '',
           link: '',
-          category: 'Writing',
+          category: 'Personal Growth',
           rating: 4.5,
           users: '1.0k',
           featured: false
         })
         loadData()
       } else {
-        alert('Failed to create tool')
+        alert('Failed to create product')
       }
     } catch (error) {
-      console.error('Error creating tool:', error)
-      alert('Failed to create tool')
+      console.error('Error creating product:', error)
+      alert('Failed to create product')
     }
 
     setSaving(false)
   }
 
-  const handleDeleteTool = async (toolId: string) => {
-    if (confirm('Are you sure you want to delete this tool?')) {
-      const success = await deleteTool(toolId)
+  const handleDeleteProduct = async (productId: string) => {
+    if (confirm('Are you sure you want to delete this product?')) {
+      const success = await deleteProduct(productId)
       if (success) {
-        alert('Tool deleted successfully!')
+        alert('Product deleted successfully!')
         loadData()
       } else {
-        alert('Failed to delete tool')
+        alert('Failed to delete product')
+      }
+    }
+  }
+
+  const handleDeleteBlog = async (blogId: string) => {
+    if (confirm('Are you sure you want to delete this blog?')) {
+      try {
+        const { error } = await supabase
+          .from('blogs')
+          .delete()
+          .eq('id', blogId)
+
+        if (error) throw error
+        
+        alert('Blog deleted successfully!')
+        loadData()
+      } catch (error) {
+        console.error('Error deleting blog:', error)
+        alert('Failed to delete blog')
       }
     }
   }
@@ -267,10 +290,10 @@ export default function AdminPage() {
                 View Blog
               </button>
               <button
-                onClick={() => router.push('/tools')}
+                onClick={() => router.push('/products')}
                 className="text-violet-600 hover:text-violet-700"
               >
-                View Tools
+                View Products
               </button>
             </div>
           </div>
@@ -289,15 +312,15 @@ export default function AdminPage() {
               <span>Manage Blogs</span>
             </button>
             <button
-              onClick={() => setActiveTab('tools')}
+              onClick={() => setActiveTab('products')}
               className={`flex items-center space-x-2 py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'tools'
+                activeTab === 'products'
                   ? 'border-violet-500 text-violet-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >
               <Settings className="w-4 h-4" />
-              <span>Manage Tools</span>
+              <span>Manage Products</span>
             </button>
           </div>
         </div>
@@ -345,12 +368,9 @@ export default function AdminPage() {
                         onChange={handleBlogInputChange}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500"
                       >
-                        <option value="AI Research">AI Research</option>
-                        <option value="Deep Learning">Deep Learning</option>
-                        <option value="Quantum Tech">Quantum Tech</option>
-                        <option value="AI Ethics">AI Ethics</option>
-                        <option value="Blockchain">Blockchain</option>
-                        <option value="Cloud Tech">Cloud Tech</option>
+                        {blogCategories.map(category => (
+                          <option key={category} value={category}>{category}</option>
+                        ))}
                       </select>
                     </div>
                     
@@ -461,12 +481,20 @@ export default function AdminPage() {
                       <span className="text-xs text-gray-500">
                         {new Date(blog.created_at).toLocaleDateString()}
                       </span>
-                      <button
-                        onClick={() => router.push(`/blog/${blog.slug}`)}
-                        className="text-violet-600 hover:text-violet-700 text-sm"
-                      >
-                        View
-                      </button>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => router.push(`/blog/${blog.slug}`)}
+                          className="text-violet-600 hover:text-violet-700 text-sm"
+                        >
+                          View
+                        </button>
+                        <button
+                          onClick={() => handleDeleteBlog(blog.id)}
+                          className="text-red-600 hover:text-red-700 text-sm"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -475,19 +503,19 @@ export default function AdminPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Tool Form */}
+            {/* Product Form */}
             <div className="lg:col-span-2">
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-6">Create New Tool</h2>
+                <h2 className="text-xl font-semibold text-gray-900 mb-6">Create New Product</h2>
                 
-                <form onSubmit={handleToolSubmit} className="space-y-6">
+                <form onSubmit={handleProductSubmit} className="space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Tool Name *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Product Name *</label>
                     <input
                       type="text"
                       name="name"
-                      value={toolForm.name}
-                      onChange={handleToolInputChange}
+                      value={productForm.name}
+                      onChange={handleProductInputChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500"
                       required
                     />
@@ -497,8 +525,8 @@ export default function AdminPage() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">Description *</label>
                     <textarea
                       name="description"
-                      value={toolForm.description}
-                      onChange={handleToolInputChange}
+                      value={productForm.description}
+                      onChange={handleProductInputChange}
                       rows={3}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500"
                       required
@@ -506,12 +534,12 @@ export default function AdminPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Tool Link *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Product Link *</label>
                     <input
                       type="url"
                       name="link"
-                      value={toolForm.link}
-                      onChange={handleToolInputChange}
+                      value={productForm.link}
+                      onChange={handleProductInputChange}
                       placeholder="https://example.com"
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500"
                       required
@@ -523,16 +551,13 @@ export default function AdminPage() {
                       <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
                       <select
                         name="category"
-                        value={toolForm.category}
-                        onChange={handleToolInputChange}
+                        value={productForm.category}
+                        onChange={handleProductInputChange}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500"
                       >
-                        <option value="Writing">Writing</option>
-                        <option value="Design">Design</option>
-                        <option value="Audio">Audio</option>
-                        <option value="Development">Development</option>
-                        <option value="Analytics">Analytics</option>
-                        <option value="Media">Media</option>
+                        {productCategories.map(category => (
+                          <option key={category} value={category}>{category}</option>
+                        ))}
                       </select>
                     </div>
                     
@@ -541,8 +566,8 @@ export default function AdminPage() {
                       <input
                         type="number"
                         name="rating"
-                        value={toolForm.rating}
-                        onChange={handleToolInputChange}
+                        value={productForm.rating}
+                        onChange={handleProductInputChange}
                         min="1"
                         max="5"
                         step="0.1"
@@ -555,8 +580,8 @@ export default function AdminPage() {
                       <input
                         type="text"
                         name="users"
-                        value={toolForm.users}
-                        onChange={handleToolInputChange}
+                        value={productForm.users}
+                        onChange={handleProductInputChange}
                         placeholder="1.2k"
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500"
                       />
@@ -564,12 +589,12 @@ export default function AdminPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Tool Image *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Product Image *</label>
                     <div className="space-y-3">
                       <input
                         type="file"
                         accept="image/*"
-                        onChange={(e) => handleImageUpload(e, 'tool')}
+                        onChange={(e) => handleImageUpload(e, 'product')}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500"
                       />
                       {uploading && (
@@ -578,10 +603,10 @@ export default function AdminPage() {
                           <span className="text-sm">Uploading to Supabase...</span>
                         </div>
                       )}
-                      {toolForm.image && (
+                      {productForm.image && (
                         <img
-                          src={toolForm.image}
-                          alt="Tool preview"
+                          src={productForm.image}
+                          alt="Product preview"
                           className="w-full h-48 object-cover rounded-lg"
                         />
                       )}
@@ -592,11 +617,11 @@ export default function AdminPage() {
                     <input
                       type="checkbox"
                       name="featured"
-                      checked={toolForm.featured}
-                      onChange={handleToolInputChange}
+                      checked={productForm.featured}
+                      onChange={handleProductInputChange}
                       className="h-4 w-4 text-violet-600 rounded border-gray-300 focus:ring-violet-500"
                     />
-                    <label className="ml-2 text-sm font-medium text-gray-700">Feature this tool</label>
+                    <label className="ml-2 text-sm font-medium text-gray-700">Feature this product</label>
                   </div>
 
                   <button
@@ -612,7 +637,7 @@ export default function AdminPage() {
                     ) : (
                       <>
                         <Plus className="w-4 h-4" />
-                        <span>Add Tool</span>
+                        <span>Add Product</span>
                       </>
                     )}
                   </button>
@@ -620,27 +645,27 @@ export default function AdminPage() {
               </div>
             </div>
 
-            {/* Published Tools */}
+            {/* Published Products */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">Published Tools</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">Published Products</h2>
               
               <div className="space-y-4">
-                {tools.map((tool) => (
-                  <div key={tool.id} className="border border-gray-200 rounded-lg p-4">
+                {products.map((product) => (
+                  <div key={product.id} className="border border-gray-200 rounded-lg p-4">
                     <div className="flex items-start space-x-3">
                       <img
-                        src={tool.image}
-                        alt={tool.name}
+                        src={product.image}
+                        alt={product.name}
                         className="w-12 h-12 object-cover rounded-lg"
                       />
                       <div className="flex-1">
-                        <h3 className="font-medium text-gray-900 mb-1">{tool.name}</h3>
-                        <p className="text-sm text-gray-600 mb-2">{tool.category}</p>
+                        <h3 className="font-medium text-gray-900 mb-1">{product.name}</h3>
+                        <p className="text-sm text-gray-600 mb-2">{product.category}</p>
                         <div className="flex items-center justify-between">
-                          <span className="text-xs text-gray-500">★ {tool.rating}</span>
+                          <span className="text-xs text-gray-500">★ {product.rating}</span>
                           <div className="flex items-center space-x-2">
                             <a
-                              href={tool.link}
+                              href={product.link}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-violet-600 hover:text-violet-700 text-sm"
@@ -648,7 +673,7 @@ export default function AdminPage() {
                               View
                             </a>
                             <button
-                              onClick={() => handleDeleteTool(tool.id)}
+                              onClick={() => handleDeleteProduct(product.id)}
                               className="text-red-600 hover:text-red-700 text-sm"
                             >
                               <Trash2 className="w-3 h-3" />

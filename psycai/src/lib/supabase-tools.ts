@@ -1,6 +1,6 @@
 import { supabase, Tool } from './supabase'
 
-export interface CreateTool {
+export interface CreateProduct {
   name: string
   description: string
   image: string
@@ -11,8 +11,11 @@ export interface CreateTool {
   featured: boolean
 }
 
-// Fetch all tools
-export const fetchTools = async (): Promise<Tool[]> => {
+// Updated product categories
+export const PRODUCT_CATEGORIES = ['All', 'Personal Growth', 'Entertainment', 'Work', 'Research', 'Creativity']
+
+// Fetch all products (renamed from tools)
+export const fetchProducts = async (): Promise<Tool[]> => {
   try {
     const { data, error } = await supabase
       .from('tools')
@@ -22,59 +25,59 @@ export const fetchTools = async (): Promise<Tool[]> => {
     if (error) throw error
     return data || []
   } catch (error) {
-    console.error('Error fetching tools:', error)
+    console.error('Error fetching products:', error)
     return []
   }
 }
 
-// Create new tool
-export const createTool = async (toolData: CreateTool): Promise<string | null> => {
+// Create new product (renamed from tool)
+export const createProduct = async (productData: CreateProduct): Promise<string | null> => {
   try {
     const { data, error } = await supabase
       .from('tools')
-      .insert(toolData)
+      .insert(productData)
       .select('id')
       .single()
 
     if (error) throw error
     return data?.id || null
   } catch (error) {
-    console.error('Error creating tool:', error)
+    console.error('Error creating product:', error)
     return null
   }
 }
 
-// Update tool
-export const updateTool = async (
-  toolId: string,
-  updates: Partial<CreateTool>
+// Update product
+export const updateProduct = async (
+  productId: string,
+  updates: Partial<CreateProduct>
 ): Promise<boolean> => {
   try {
     const { error } = await supabase
       .from('tools')
       .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq('id', toolId)
+      .eq('id', productId)
 
     if (error) throw error
     return true
   } catch (error) {
-    console.error('Error updating tool:', error)
+    console.error('Error updating product:', error)
     return false
   }
 }
 
-// Delete tool
-export const deleteTool = async (toolId: string): Promise<boolean> => {
+// Delete product
+export const deleteProduct = async (productId: string): Promise<boolean> => {
   try {
     const { error } = await supabase
       .from('tools')
       .delete()
-      .eq('id', toolId)
+      .eq('id', productId)
 
     if (error) throw error
     return true
   } catch (error) {
-    console.error('Error deleting tool:', error)
+    console.error('Error deleting product:', error)
     return false
   }
 }

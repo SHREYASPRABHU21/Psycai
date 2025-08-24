@@ -15,16 +15,15 @@ export default function Footer() {
 
   const quickLinks = [
     { name: 'Home', href: '/' },
-    { name: 'Tools', href: '/tools' },
+    { name: 'Products', href: '/products' },
     { name: 'Blog', href: '/blog' },
     { name: 'Contact', href: '/contact' },
   ]
 
   const company = [
-    { name: 'About Us', href: '/about' },
     { name: 'Privacy Policy', href: '/privacy' },
     { name: 'Terms of Service', href: '/terms' },
-    { name: 'Support', href: '/support' },
+    { name: 'Support', href: '/contact' },
   ]
 
   const social = [
@@ -48,7 +47,7 @@ export default function Footer() {
             </Link>
             
             <p className="text-gray-400 leading-relaxed max-w-md">
-              Your central hub for discovering and using amazing AI tools. 
+              Your central hub for discovering and using amazing AI products. 
               Explore the possibilities of artificial intelligence in one convenient platform.
             </p>
 
@@ -73,13 +72,13 @@ export default function Footer() {
             <ul className="space-y-2">
               {quickLinks.map((link) => (
                 <li key={link.name}>
-                  <a
+                  <Link
                     href={link.href}
                     className="text-gray-400 hover:text-violet-400 transition-colors duration-300 flex items-center group"
                   >
                     {link.name}
                     <ArrowUpRight className="w-3 h-3 ml-1 opacity-0 group-hover:opacity-100 transform translate-x-0 group-hover:translate-x-1 transition-all duration-300" />
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -91,13 +90,13 @@ export default function Footer() {
             <ul className="space-y-2">
               {company.map((link) => (
                 <li key={link.name}>
-                  <a
+                  <Link
                     href={link.href}
                     className="text-gray-400 hover:text-violet-400 transition-colors duration-300 flex items-center group"
                   >
                     {link.name}
                     <ArrowUpRight className="w-3 h-3 ml-1 opacity-0 group-hover:opacity-100 transform translate-x-0 group-hover:translate-x-1 transition-all duration-300" />
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -107,7 +106,7 @@ export default function Footer() {
           <div className="lg:col-span-3 space-y-4">
             <h3 className="text-lg font-semibold text-white">Stay Updated</h3>
             <p className="text-gray-400">
-              Get notified about new AI tools and platform updates.
+              Get notified about new AI products and platform updates.
             </p>
             
             <div className="space-y-3">
@@ -122,7 +121,7 @@ export default function Footer() {
                 </button>
               </div>
               <p className="text-xs text-gray-500">
-                No spam, just updates about cool AI tools.
+                No spam, just updates about cool AI products.
               </p>
             </div>
           </div>
@@ -133,8 +132,8 @@ export default function Footer() {
           <div className="flex flex-col lg:flex-row justify-between items-center space-y-3 lg:space-y-0">
             <div className="flex items-center space-x-4 text-sm text-gray-500">
               <span>© {currentYear} PsycAi</span>
-              <a href="/privacy" className="hover:text-violet-400 transition-colors">Privacy</a>
-              <a href="/terms" className="hover:text-violet-400 transition-colors">Terms</a>
+              <Link href="/privacy" className="hover:text-violet-400 transition-colors">Privacy</Link>
+              <Link href="/terms" className="hover:text-violet-400 transition-colors">Terms</Link>
             </div>
             
             <div className="flex items-center space-x-2 text-sm text-gray-500">

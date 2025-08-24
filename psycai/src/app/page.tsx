@@ -6,57 +6,48 @@ import Layout from '@/components/layout/Layout'
 import UserProfile from '@/components/auth/UserProfile'
 import { ArrowRight, Sparkles, CheckCircle, Calendar, Clock } from 'lucide-react'
 import Link from 'next/link'
+import { fetchProducts } from '@/lib/supabase-tools'
+import { fetchBlogs } from '@/lib/supabase-blog'
+import { Tool, Blog } from '@/lib/supabase'
 
 export default function HomePage() {
   const { user, loading } = useAuth()
   const [mounted, setMounted] = useState(false)
+  const [featuredTools, setFeaturedTools] = useState<Tool[]>([])
+  const [featuredBlogs, setFeaturedBlogs] = useState<Blog[]>([])
+  const [toolsLoading, setToolsLoading] = useState(true)
+  const [blogsLoading, setBlogsLoading] = useState(true)
 
   useEffect(() => {
     setMounted(true)
+    loadData()
   }, [])
 
-  // Sample featured tools data
-  const featuredTools = [
-    {
-      id: 1,
-      name: 'Smart Writer',
-      year: '2024',
-      image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-      description: 'AI-powered content creation for blogs and marketing',
-    },
-    {
-      id: 2,
-      name: 'Code Reviewer',
-      year: '2024',
-      image: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-      description: 'Intelligent code analysis and optimization',
-    },
-  ]
+  const loadData = async () => {
+    try {
+      const [toolsData, blogsData] = await Promise.all([
+        fetchProducts(),
+        fetchBlogs()
+      ])
+      
+      // Get first 2 tools and 3 blogs
+      setFeaturedTools(toolsData.slice(0, 2))
+      setFeaturedBlogs(blogsData.slice(0, 3))
+    } catch (error) {
+      console.error('Error loading data:', error)
+    } finally {
+      setToolsLoading(false)
+      setBlogsLoading(false)
+    }
+  }
 
-  // Sample featured blogs data
-  const featuredBlogs = [
-    {
-      id: 1,
-      title: 'Getting Started with AI Tools',
-      image: 'https://images.unsplash.com/photo-1555949963-aa79dcee981c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      date: 'Dec 15, 2024',
-      readTime: '5 min',
-    },
-    {
-      id: 2,
-      title: 'Best Practices for AI Integration',
-      image: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      date: 'Dec 10, 2024',
-      readTime: '7 min',
-    },
-    {
-      id: 3,
-      title: 'Exploring New Possibilities',
-      image: 'https://images.unsplash.com/photo-1518186285589-2f7649de83e0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      date: 'Dec 5, 2024',
-      readTime: '6 min',
-    },
-  ]
+  const formatDate = (timestamp: string) => {
+    return new Date(timestamp).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    })
+  }
 
   if (!mounted) return null
 
@@ -74,24 +65,26 @@ export default function HomePage() {
         </div>
 
         {/* Navigation */}
+                {/* Navigation */}
         <nav className="relative z-50 container mx-auto px-6 py-4">
           <div className="flex justify-between items-center">
             {/* Text logo aligned with content */}
-            <Link href="/" className="text-3xl font-extrabold tracking-wide text-white ml-40 hover:text-violet-300 transition-colors">
+            <Link href="/" className="text-3xl font-extrabold tracking-wide text-white hover:text-violet-300 transition-colors">
               PsycAi
             </Link>
 
-            <div className="hidden md:flex items-center space-x-8">
-              <Link href="/" className="text-white/80 hover:text-white text-sm font-medium">
+            {/* Centered Navigation Links */}
+            <div className="absolute left-1/2 transform -translate-x-1/2 hidden md:flex items-center space-x-8">
+              <Link href="/" className="text-white/80 hover:text-white text-sm font-medium transition-colors">
                 Home
               </Link>
-              <Link href="/tools" className="text-white/80 hover:text-white text-sm font-medium">
-                Tools
+              <Link href="/products" className="text-white/80 hover:text-white text-sm font-medium transition-colors">
+                Products
               </Link>
-              <Link href="/blog" className="text-white/80 hover:text-white text-sm font-medium">
+              <Link href="/blog" className="text-white/80 hover:text-white text-sm font-medium transition-colors">
                 Blog
               </Link>
-              <Link href="/contact" className="text-white/80 hover:text-white text-sm font-medium">
+              <Link href="/contact" className="text-white/80 hover:text-white text-sm font-medium transition-colors">
                 Contact
               </Link>
             </div>
@@ -121,6 +114,7 @@ export default function HomePage() {
           </div>
         </nav>
 
+
         {/* Hero Content */}
         <div className="relative z-10 container mx-auto px-6">
           <div className="grid lg:grid-cols-12 gap-12 items-center min-h-[70vh]">
@@ -129,7 +123,7 @@ export default function HomePage() {
             <div className="lg:col-span-7 lg:pl-40 space-y-8">
               <div className="space-y-6">
                 <h1 className="text-4xl lg:text-5xl font-bold leading-tight">
-                  Your AI Tools
+                  Your AI Products
                   <br />
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-300 via-purple-300 to-indigo-300">Hub</span>
                   <br />
@@ -137,7 +131,7 @@ export default function HomePage() {
                 </h1>
                 
                 <p className="text-lg text-white/80 leading-relaxed max-w-2xl">
-                  Discover, explore, and use amazing AI tools all in one place. 
+                  Discover, explore, and use amazing AI products all in one place. 
                   Your central platform for artificial intelligence powered solutions.
                 </p>
               </div>
@@ -151,10 +145,10 @@ export default function HomePage() {
                   Get Started Free
                 </Link>
                 <Link 
-                  href="/about" 
+                  href="/blog" 
                   className="px-8 py-4 bg-white/10 backdrop-blur-sm border border-white/20 text-white rounded-lg font-semibold hover:bg-white/20 transition-all"
                 >
-                  Learn More
+                  See Insights
                 </Link>
               </div>
             </div>
@@ -178,53 +172,59 @@ export default function HomePage() {
         </div>
       </section>
 
-      
-
-      {/* Next.js Image component */}
-      
-      {/* Tools Section */}
+      {/* Products Section */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-              Featured AI Tools
+              Featured AI Products
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Explore our handpicked collection of AI tools to boost your productivity
+              Explore our handpicked collection of AI products to boost your productivity
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-12">
-            {featuredTools.map((tool) => (
-              <div key={tool.id} className="group cursor-pointer">
-                <div className="relative overflow-hidden rounded-2xl bg-gray-100 aspect-[4/3]">
-                  <img 
-                    src={tool.image} 
-                    alt={tool.name}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-                  
-                  <div className="absolute bottom-6 left-6 text-white">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <span className="text-sm font-medium bg-violet-500/80 backdrop-blur-sm px-3 py-1 rounded-full">
-                        {tool.year}
-                      </span>
+          {toolsLoading ? (
+            <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-12">
+              {[1, 2].map((i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="bg-gray-200 rounded-2xl aspect-[4/3]"></div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-12">
+              {featuredTools.map((tool) => (
+                <div key={tool.id} className="group cursor-pointer" onClick={() => window.open(tool.link, '_blank')}>
+                  <div className="relative overflow-hidden rounded-2xl bg-gray-100 aspect-[4/3]">
+                    <img 
+                      src={tool.image} 
+                      alt={tool.name}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                    
+                    <div className="absolute bottom-6 left-6 text-white">
+                      <div className="flex items-center space-x-3 mb-2">
+                        <span className="text-sm font-medium bg-violet-500/80 backdrop-blur-sm px-3 py-1 rounded-full">
+                          {tool.category}
+                        </span>
+                      </div>
+                      <h3 className="text-2xl font-bold mb-2">{tool.name}</h3>
+                      <p className="text-white/90 text-sm mb-4">{tool.description}</p>
                     </div>
-                    <h3 className="text-2xl font-bold mb-2">{tool.name}</h3>
-                    <p className="text-white/90 text-sm mb-4">{tool.description}</p>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
 
           <div className="text-center">
             <Link 
-              href="/signup"
+              href="/products"
               className="inline-flex items-center px-8 py-4 bg-violet-600 text-white rounded-lg font-semibold hover:bg-violet-700 transition-colors"
             >
-              Start Using Tools
+              View All Products
               <ArrowRight className="w-5 h-5 ml-2" />
             </Link>
           </div>
@@ -246,45 +246,63 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {featuredBlogs.map((blog, index) => (
-              <div key={blog.id} className="group cursor-pointer">
-                <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300">
-                  <div className="aspect-[4/3] overflow-hidden">
-                    <img 
-                      src={blog.image} 
-                      alt={blog.title}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                  </div>
-                  
-                  <div className="p-6">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-4 line-clamp-2 group-hover:text-violet-600 transition-colors">
-                      {blog.title}
-                    </h3>
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4 text-sm text-gray-500">
-                        <div className="flex items-center space-x-1">
-                          <Calendar className="w-4 h-4" />
-                          <span>{blog.date}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <Clock className="w-4 h-4" />
-                          <span>{blog.readTime} read</span>
-                        </div>
-                      </div>
-                      
-                      <button className="inline-flex items-center text-sm font-medium text-violet-600 hover:text-violet-700 transition-colors">
-                        Read more
-                        <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-                      </button>
+          {blogsLoading ? (
+            <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
+                    <div className="bg-gray-200 aspect-[4/3]"></div>
+                    <div className="p-6">
+                      <div className="bg-gray-200 h-4 rounded mb-4"></div>
+                      <div className="bg-gray-200 h-3 rounded w-1/2"></div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+              {featuredBlogs.map((blog, index) => (
+                <Link key={blog.id} href={`/blog/${blog.slug}`}>
+                  <div className="group cursor-pointer">
+                    <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300">
+                      <div className="aspect-[4/3] overflow-hidden">
+                        <img 
+                          src={blog.cover_image} 
+                          alt={blog.title}
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                      </div>
+                      
+                      <div className="p-6">
+                        <h3 className="text-xl font-semibold text-gray-900 mb-4 line-clamp-2 group-hover:text-violet-600 transition-colors">
+                          {blog.title}
+                        </h3>
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-4 text-sm text-gray-500">
+                            <div className="flex items-center space-x-1">
+                              <Calendar className="w-4 h-4" />
+                              <span>{formatDate(blog.created_at)}</span>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <Clock className="w-4 h-4" />
+                              <span>{Math.ceil(blog.content.length / 1000)} min read</span>
+                            </div>
+                          </div>
+                          
+                          <button className="inline-flex items-center text-sm font-medium text-violet-600 hover:text-violet-700 transition-colors">
+                            Read more
+                            <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </Layout>

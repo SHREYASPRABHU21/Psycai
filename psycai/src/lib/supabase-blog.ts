@@ -1,7 +1,7 @@
 import { supabase, Blog } from './supabase'
 
 export interface CreateBlog {
-  title: string
+   title: string
   slug: string
   excerpt: string
   content: string
@@ -10,6 +10,8 @@ export interface CreateBlog {
   cover_image: string
   published: boolean
 }
+
+export const BLOG_CATEGORIES = ['All', 'Marketing', 'Business', 'AI']
 
 // Fetch all published blogs
 export const fetchBlogs = async (): Promise<Blog[]> => {

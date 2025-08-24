@@ -1,168 +1,130 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { usePathname } from 'next/navigation'
+import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-import UserProfile from '@/components/auth/UserProfile'
-import Logo from '@/components/brand/Logo'
-import { Menu, X } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { LogOut } from 'lucide-react'
+import Link from 'next/link'
 
-export default function Navigation() {
+export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
-  const [mounted, setMounted] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
-  const { user, loading, isClient } = useAuth()
-  const pathname = usePathname()
+  const { user, userData, logout } = useAuth()
+  const router = useRouter()
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    setMounted(true)
-    
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20)
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
     }
-    
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const navigationItems = [
-    { href: '/', label: 'Home', showWhenLoggedOut: true },
-    { href: '/tools', label: 'Tools', requiresAuth: true },
-    { href: '/blog', label: 'Blog', showWhenLoggedOut: true },
-    { href: '/contact', label: 'Contact', showWhenLoggedOut: true },
-    { href: '/admin/blogs', label: 'Admin', requiresAuth: true },
-  ]
-
-  const isActive = (href: string) => {
-    if (href === '/') return pathname === '/'
-    return pathname.startsWith(href)
+  const handleSignOut = async () => {
+    try {
+      await logout()
+      setIsOpen(false)
+      router.push('/')
+    } catch (error) {
+      console.error('Failed to sign out:', error)
+    }
   }
 
-  const filteredItems = navigationItems.filter(item => {
-    if (item.requiresAuth && !user) return false
-    if (!item.showWhenLoggedOut && !user) return false
-    return true
-  })
+  if (!user) return null
 
-  if (!mounted || !isClient) {
-    return null
-  }
-
-  // Only show overlay navigation on home page
-  const isHomePage = pathname === '/'
+  const displayName = user.displayName || userData?.displayName || 'User'
   
-  if (isHomePage) {
-    // Navigation is handled within the home page component
-    return null
+  const getProfileImage = () => {
+    if (user.photoURL && user.photoURL.startsWith('http')) {
+      return user.photoURL
+    }
+    const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    const colors = ['bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-pink-500', 'bg-indigo-500']
+    const colorIndex = displayName.charCodeAt(0) % colors.length
+    return { initials, color: colors[colorIndex] }
   }
 
-  // Regular navigation for other pages
+  const profileImage = getProfileImage()
+
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      scrolled ? 'bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-lg' : 'bg-white border-b border-gray-200'
-    }`}>
-      <div className="container mx-auto px-6">
-        <div className="flex justify-between items-center h-20">
-          <Logo size="md" />
+    <header className="bg-white border-b border-gray-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center py-6">
+          
+          {/* Logo */}
+          <Link href="/" className="flex items-center">
+            <span className="text-xl font-bold text-gray-900">PsycAi</span>
+          </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-8">
-            <div className="flex items-center space-x-6">
-              {filteredItems.map((item) => (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  className={`text-sm font-medium transition-colors relative ${
-                    isActive(item.href)
-                      ? 'text-purple-600'
-                      : 'text-gray-600 hover:text-purple-600'
-                  }`}
-                >
-                  {item.label}
-                  {isActive(item.href) && (
-                    <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-purple-600 rounded-full" />
-                  )}
-                </a>
-              ))}
-            </div>
+          {/* Navigation Links */}
+          <nav className="hidden md:flex items-center space-x-8">
+            <Link href="/" className="text-gray-600 hover:text-gray-900 transition-colors">
+              Home
+            </Link>
+            <Link href="/products" className="text-gray-600 hover:text-gray-900 transition-colors">
+              Products
+            </Link>
+            <Link href="/blog" className="text-gray-600 hover:text-gray-900 transition-colors">
+              Blog
+            </Link>
+            <Link href="/contact" className="text-gray-600 hover:text-gray-900 transition-colors">
+              Contact
+            </Link>
+          </nav>
 
-            <div className="flex items-center space-x-4">
-              {loading ? (
-                <div className="w-10 h-10 bg-gray-200 rounded-full animate-pulse" />
-              ) : user ? (
-                <UserProfile />
-              ) : (
-                <div className="flex items-center space-x-3">
-                  <a
-                    href="/login"
-                    className="text-sm font-medium text-gray-600 hover:text-purple-600 transition-colors"
-                  >
-                    Sign In
-                  </a>
-                  <a
-                    href="/signup"
-                    className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors"
-                  >
-                    Get Started
-                  </a>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Mobile Menu Button */}
-          <div className="lg:hidden flex items-center space-x-4">
-            {user && !loading && <UserProfile />}
+          {/* User Profile Dropdown */}
+          <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
             >
-              {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Navigation */}
-        {isOpen && (
-          <div className="lg:hidden py-6 border-t border-gray-200 bg-white/95 backdrop-blur-xl">
-            <div className="space-y-4">
-              {filteredItems.map((item) => (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setIsOpen(false)}
-                  className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                    isActive(item.href)
-                      ? 'text-purple-600 bg-purple-50'
-                      : 'text-gray-600 hover:text-purple-600 hover:bg-gray-50'
-                  }`}
-                >
-                  {item.label}
-                </a>
-              ))}
-              
-              {!loading && !user && (
-                <div className="pt-4 border-t border-gray-200 space-y-3">
-                  <a
-                    href="/login"
-                    onClick={() => setIsOpen(false)}
-                    className="block px-4 py-3 text-sm font-medium text-gray-600 hover:text-purple-600 hover:bg-gray-50 rounded-lg transition-colors"
-                  >
-                    Sign In
-                  </a>
-                  <a
-                    href="/signup"
-                    onClick={() => setIsOpen(false)}
-                    className="block px-4 py-3 bg-purple-600 text-white text-center rounded-lg font-medium hover:bg-purple-700 transition-colors"
-                  >
-                    Get Started
-                  </a>
+              {typeof profileImage === 'string' ? (
+                <img
+                  src={profileImage}
+                  alt={displayName}
+                  className="w-8 h-8 rounded-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLElement).style.display = 'none'
+                  }}
+                />
+              ) : (
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold ${profileImage.color}`}>
+                  {profileImage.initials}
                 </div>
               )}
-            </div>
+            </button>
+
+            {isOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                <div className="p-2">
+                  
+                  {/* User Info */}
+                  <div className="px-3 py-2 border-b border-gray-100 mb-2">
+                    <div className="font-medium text-gray-900 text-sm truncate">
+                      {displayName}
+                    </div>
+                    <div className="text-xs text-gray-500 truncate">
+                      {user.email}
+                    </div>
+                  </div>
+
+                  {/* Sign Out Button */}
+                  <button
+                    onClick={handleSignOut}
+                    className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors text-left"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
-    </nav>
+    </header>
   )
 }
