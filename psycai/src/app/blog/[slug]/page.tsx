@@ -4,16 +4,20 @@ import { fetchBlogBySlug } from '@/lib/supabase-blog'
 import Footer from '@/components/layout/Footer'
 import UserProfile from '@/components/auth/UserProfile'
 import { ArrowLeft, Calendar, Clock, Share2, Heart, Globe } from 'lucide-react'
+import ShareButtons from "@/components/blog/ShareButtons"
 
 interface Params {
   slug: string
 }
 
-export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
-  const blog = await fetchBlogBySlug(params.slug)
+export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
+  const { slug } = await params
+  const blog = await fetchBlogBySlug(slug)
+
   if (!blog) {
     return { title: 'Blog Not Found' }
   }
+
   return {
     title: blog.title,
     description: blog.excerpt,
@@ -33,8 +37,11 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   }
 }
 
-export default async function BlogPostPage({ params }: { params: Params }) {
-  const blog = await fetchBlogBySlug(params.slug)
+
+export default async function BlogPostPage({ params }: { params: Promise<Params> }) {
+  const { slug } = await params
+  const blog = await fetchBlogBySlug(slug)
+
   if (!blog) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -98,21 +105,7 @@ export default async function BlogPostPage({ params }: { params: Params }) {
         </div>
 
         {/* Like/Share */}
-        <div className="mt-12 flex space-x-4">
-          <button className="flex items-center space-x-1 px-4 py-2 bg-gray-100 rounded-full hover:bg-gray-200 transition">
-            <Heart className="w-5 h-5" /> <span>Like</span>
-          </button>
-          <button className="flex items-center space-x-1 px-4 py-2 bg-gray-100 rounded-full hover:bg-gray-200 transition" onClick={() => {
-            if (navigator.share) {
-              navigator.share({ title: blog.title, text: blog.excerpt, url: window.location.href })
-            } else {
-              navigator.clipboard.writeText(window.location.href)
-              alert('Link copied!')
-            }
-          }}>
-            <Share2 className="w-5 h-5" /> <span>Share</span>
-          </button>
-        </div>
+        <ShareButtons title={blog.title} excerpt={blog.excerpt} />
       </article>
 
       <Footer />
