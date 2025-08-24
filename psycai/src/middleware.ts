@@ -2,18 +2,24 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  // Skip middleware for auth routes and tools
   const pathname = request.nextUrl.pathname
-  
-  if (pathname.startsWith('/login') || 
-      pathname.startsWith('/signup') || 
-      pathname.startsWith('/tools') ||
+
+  // Skip middleware for auth routes, API routes, and static files
+  if (pathname.startsWith('/login') ||
+      pathname.startsWith('/signup') ||
       pathname.startsWith('/api') ||
-      pathname.startsWith('/_next')) {
+      pathname.startsWith('/_next') ||
+      pathname.startsWith('/favicon.ico')) {
     return NextResponse.next()
   }
-  
-  // Add any other middleware logic here
+
+  // Check if request is for admin routes
+  if (pathname.startsWith('/admin')) {
+    // Server-side admin check could be added here
+    // For now, we'll let the client-side checks handle it
+    return NextResponse.next()
+  }
+
   return NextResponse.next()
 }
 

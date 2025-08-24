@@ -18,7 +18,7 @@ export default function LoginPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   
-  const redirectTo = searchParams.get('redirectTo') || '/tools'
+  const redirectTo = searchParams.get('redirectTo') || '/products'
 
   useEffect(() => {
     if (user && !loading) {

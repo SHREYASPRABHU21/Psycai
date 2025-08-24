@@ -24,7 +24,7 @@ export default function SignupPage() {
 
   useEffect(() => {
     if (user && !loading) {
-      router.push('/tools')
+      router.push('/products')
     }
   }, [user, loading, router])
 

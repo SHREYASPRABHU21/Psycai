@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
-import { LogOut } from 'lucide-react'
+import { LogOut, Settings } from 'lucide-react'
 
 export default function UserProfile() {
   const [isOpen, setIsOpen] = useState(false)
@@ -36,6 +36,7 @@ export default function UserProfile() {
 
   const displayName = user.displayName || userData?.displayName || 'User'
   const email = user.email || ''
+  const isAdmin = email === 'prabhushreyas21@gmail.com'
   
   // Debug log to see what photoURL we're getting
   console.log('User photoURL:', user.photoURL)
@@ -120,7 +121,21 @@ export default function UserProfile() {
               </div>
             </div>
 
-            {/* Sign Out Button Only */}
+            {/* Admin Button - Only for your email */}
+            {isAdmin && (
+              <button
+                onClick={() => {
+                  router.push('/admin/blogs')
+                  setIsOpen(false)
+                }}
+                className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-violet-600 hover:bg-violet-50 rounded-md transition-colors text-left mb-1"
+              >
+                <Settings className="w-4 h-4" />
+                <span>Admin Panel</span>
+              </button>
+            )}
+
+            {/* Sign Out Button */}
             <button
               onClick={handleSignOut}
               className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors text-left"
