@@ -166,10 +166,10 @@ export default function ProductsPage() {
                     {/* Products Grid */}
           <div className="p-8">
             {productsLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
                   <div key={i} className="animate-pulse">
-                    <div className="bg-gray-200 aspect-square rounded-lg"></div>
+                    <div className="bg-gray-200 h-64 rounded-xl mb-4"></div>
                   </div>
                 ))}
               </div>
@@ -182,43 +182,51 @@ export default function ProductsPage() {
                 <p className="text-sm text-gray-500">Try adjusting your search or filters</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {filteredProducts.map((product) => (
                   <div
                     key={product.id}
                     onClick={() => handleProductClick(product)}
-                    className="group cursor-pointer"
+                    className="group cursor-pointer bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300"
                   >
-                    {/* Square Product Image with Text Overlay */}
-                    <div className="relative aspect-square overflow-hidden rounded-lg">
+                    {/* Product Image with Overlay */}
+                    <div className="relative h-64 overflow-hidden">
                       <img
                         src={product.image}
                         alt={product.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
+                        style={{ objectFit: 'cover' }}
                       />
                       
-                      {/* Content Overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent p-6 flex flex-col justify-between">
-                        
-                        {/* Category & External Link */}
-                        <div className="flex justify-between items-start">
-                          <span className="bg-white/20 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-medium">
-                            {product.category}
-                          </span>
-                          <div className="w-6 h-6 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                            <ExternalLink className="w-3 h-3 text-white" />
-                          </div>
+                      {/* Category Badge */}
+                      <div className="absolute top-4 left-4">
+                        <span className="bg-white/90 backdrop-blur-sm text-gray-900 px-3 py-1 rounded-full text-xs font-medium">
+                          {product.category}
+                        </span>
+                      </div>
+                      
+                      {/* External Link Icon */}
+                      <div className="absolute top-4 right-4">
+                        <div className="w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center">
+                          <ExternalLink className="w-4 h-4 text-gray-700" />
                         </div>
+                      </div>
 
-                        {/* Product Info */}
-                        <div>
-                          <h3 className="text-white font-semibold text-lg mb-2 group-hover:text-yellow-200 transition-colors">
-                            {product.name}
-                          </h3>
-                          <p className="text-white/90 text-sm leading-relaxed line-clamp-3">
-                            {product.description}
-                          </p>
-                        </div>
+                      {/* Title Always Visible */}
+                      <div className="absolute group-hover:opacity-0 bottom-4 left-4 right-4">
+                        <h3 className="text-white font-semibold text-lg leading-tight drop-shadow-lg">
+                          {product.name}
+                        </h3>
+                      </div>
+
+                      {/* Hover Overlay with Description */}
+                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
+                        <h3 className="text-white font-semibold text-lg mb-2">
+                          {product.name}
+                        </h3>
+                        <p className="text-white/90 text-sm leading-relaxed line-clamp-3">
+                          {product.description}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -226,6 +234,8 @@ export default function ProductsPage() {
               </div>
             )}
           </div>
+
+
 
         </div>
       </main>

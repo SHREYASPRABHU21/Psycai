@@ -13,8 +13,8 @@ export interface CreateBlog {
 
 export const BLOG_CATEGORIES = ['All', 'Marketing', 'Business', 'AI']
 
-// Fetch all published blogs
-export const fetchBlogs = async (): Promise<Blog[]> => {
+// Update the fetchBlogs function to ensure proper filtering
+export async function fetchBlogs(): Promise<Blog[]> {
   try {
     const { data, error } = await supabase
       .from('blogs')
@@ -23,15 +23,17 @@ export const fetchBlogs = async (): Promise<Blog[]> => {
       .order('created_at', { ascending: false })
 
     if (error) {
-      console.error('Supabase error fetching blogs:', error)
-      throw error
+      console.error('Error fetching blogs:', error)
+      return []
     }
+
     return data || []
   } catch (error) {
     console.error('Error fetching blogs:', error)
     return []
   }
 }
+
 
 // Fetch blog by slug
 export const fetchBlogBySlug = async (slug: string): Promise<Blog | null> => {

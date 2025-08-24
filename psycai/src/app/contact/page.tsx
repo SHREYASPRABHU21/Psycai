@@ -8,28 +8,25 @@ import Footer from '@/components/layout/Footer'
 import { ChevronLeft, ChevronRight, Send, Globe } from 'lucide-react'
 import Link from 'next/link'
 
-const testimonials = [
+const quotes = [
   {
-    text: "Working with PsycAi has been an absolute pleasure from start to finish. Their expertise in AI products allowed them to bring our vision to life with precision and creativity. They didn't just help us find tools; they crafted an immersive experience that perfectly reflects our brand identity.",
-    author: "Sarah Johnson",
-    title: "Chief Marketing Officer at TechSavvy Solutions"
+    text: "The best way to predict the future is to create it with AI.",
+    author: "PsycAi Team"
   },
   {
-    text: "The team at PsycAi transformed how we approach AI integration in our business. Their curated selection of products and expert guidance helped us increase productivity by 300% within just three months.",
-    author: "Michael Chen",
-    title: "CEO at Innovation Labs"
+    text: "Artificial intelligence is not about replacing humans, it's about augmenting human capabilities.",
+    author: "PsycAi Philosophy"
   },
   {
-    text: "PsycAi's blog insights and product recommendations have been invaluable for our AI transformation journey. Their expertise saved us countless hours of research and trial-and-error.",
-    author: "Emily Rodriguez",
-    title: "CTO at Digital Dynamics"
+    text: "Every AI tool you discover here has the potential to transform your workflow and unlock new possibilities.",
+    author: "Our Mission"
   }
 ]
 
 export default function ContactPage() {
   const { user, loading } = useAuth()
   const router = useRouter()
-  const [currentTestimonial, setCurrentTestimonial] = useState(0)
+  const [currentQuote, setCurrentQuote] = useState(0)
   
   const [formData, setFormData] = useState({
     firstName: '',
@@ -68,12 +65,12 @@ export default function ContactPage() {
     }, 1000)
   }
 
-  const nextTestimonial = () => {
-    setCurrentTestimonial((prev) => (prev + 1) % testimonials.length)
+  const nextQuote = () => {
+    setCurrentQuote((prev) => (prev + 1) % quotes.length)
   }
 
-  const prevTestimonial = () => {
-    setCurrentTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length)
+  const prevQuote = () => {
+    setCurrentQuote((prev) => (prev - 1 + quotes.length) % quotes.length)
   }
 
   if (loading) {
@@ -127,45 +124,42 @@ export default function ContactPage() {
           <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
             <div className="grid lg:grid-cols-2">
               
-              {/* Left Side - Testimonial */}
+              {/* Left Side - Inspirational Quote */}
               <div className="relative bg-gray-900 p-12 flex flex-col justify-between min-h-[600px]">
                 
-                {/* 3D Cube Image */}
+                {/* AI/Tech Image */}
                 <div className="flex-1 flex items-center justify-center mb-8">
                   <div className="relative">
                     <img
                       src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&h=400&fit=crop&crop=center"
-                      alt="AI Visualization"
+                      alt="AI Innovation"
                       className="w-64 h-64 object-cover rounded-2xl shadow-2xl"
                     />
                   </div>
                 </div>
 
-                {/* Testimonial Content */}
+                {/* Quote Content */}
                 <div className="text-white">
                   <blockquote className="text-lg leading-relaxed mb-6 font-light">
-                    "{testimonials[currentTestimonial].text}"
+                    "{quotes[currentQuote].text}"
                   </blockquote>
                   
                   <div className="mb-6">
                     <div className="font-semibold text-white">
-                      {testimonials[currentTestimonial].author}
-                    </div>
-                    <div className="text-gray-300 text-sm font-light">
-                      {testimonials[currentTestimonial].title}
+                      {quotes[currentQuote].author}
                     </div>
                   </div>
 
                   {/* Navigation */}
                   <div className="flex items-center space-x-3">
                     <button
-                      onClick={prevTestimonial}
+                      onClick={prevQuote}
                       className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors"
                     >
                       <ChevronLeft className="w-5 h-5 text-white" />
                     </button>
                     <button
-                      onClick={nextTestimonial}
+                      onClick={nextQuote}
                       className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors"
                     >
                       <ChevronRight className="w-5 h-5 text-white" />
@@ -193,8 +187,7 @@ export default function ContactPage() {
                     Let's discuss it together.
                   </h2>
                   <p className="text-gray-600 leading-relaxed">
-                    I'm always open to new opportunities. Feel free to drop me a line if 
-                    having any questions or projects.
+                    We're always open to new opportunities. Feel free to drop us a line if you have any questions or project ideas.
                   </p>
                 </div>
 
@@ -264,7 +257,7 @@ export default function ContactPage() {
                         value={formData.message}
                         onChange={handleInputChange}
                         rows={4}
-                        placeholder="Any additional information..."
+                        placeholder="Tell us about your project or ask any questions..."
                         className="w-full px-4 py-3 bg-gray-50 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 text-gray-900 placeholder-gray-500"
                         required
                       />

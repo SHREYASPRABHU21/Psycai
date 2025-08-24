@@ -11,15 +11,12 @@ import { fetchBlogs } from '@/lib/supabase-blog'
 import { Blog } from '@/lib/supabase'
 import Link from 'next/link'
 
-const sortOptions = ['Newest', 'Oldest', 'Most Popular', 'Most Read']
 const BLOG_CATEGORIES = ['All', 'Marketing', 'Business', 'AI']
 
 export default function BlogPage() {
   const { user, loading } = useAuth()
   const router = useRouter()
   const [selectedCategory, setSelectedCategory] = useState('All')
-  const [sortBy, setSortBy] = useState('Newest')
-  const [showSortDropdown, setShowSortDropdown] = useState(false)
   const [currentSlide, setCurrentSlide] = useState(0)
   const [blogs, setBlogs] = useState<Blog[]>([])
   const [filteredBlogs, setFilteredBlogs] = useState<Blog[]>([])
@@ -48,29 +45,25 @@ export default function BlogPage() {
   useEffect(() => {
     let filtered = blogs
 
+    // Apply category filter
     if (selectedCategory !== 'All') {
-      filtered = blogs.filter(blog => blog.category === selectedCategory)
+      filtered = blogs.filter(blog => 
+        blog.category && blog.category.toLowerCase() === selectedCategory.toLowerCase()
+      )
     }
 
+    // Apply search filter
     if (searchTerm) {
       filtered = filtered.filter(blog => 
         blog.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         blog.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        blog.category.toLowerCase().includes(searchTerm.toLowerCase())
+        (blog.category && blog.category.toLowerCase().includes(searchTerm.toLowerCase()))
       )
     }
 
-    // Sort blogs
-    if (sortBy === 'Newest') {
-      filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-    } else if (sortBy === 'Oldest') {
-      filtered.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
-    } else if (sortBy === 'Most Popular') {
-      filtered.sort((a, b) => b.views - a.views)
-    }
-
     setFilteredBlogs(filtered)
-  }, [blogs, selectedCategory, searchTerm, sortBy])
+    console.log('Filtered blogs:', filtered.length, 'Category:', selectedCategory, 'Search:', searchTerm)
+  }, [blogs, selectedCategory, searchTerm])
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -85,9 +78,15 @@ export default function BlogPage() {
   const formatDate = (timestamp: string) => {
     return new Date(timestamp).toLocaleDateString('en-US', {
       day: 'numeric',
-      month: 'short',
+      month: 'long',
       year: 'numeric'
     })
+  }
+
+  const calculateReadTime = (content: string) => {
+    const wordsPerMinute = 200
+    const wordCount = content.split(' ').length
+    return Math.ceil(wordCount / wordsPerMinute)
   }
 
   if (loading) {
@@ -107,7 +106,8 @@ export default function BlogPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Hero Section with Featured Blog */}
+      {/* Hero Section - Keep existing hero code... */}
+       {/* Hero Section with Featured Blog */}
       <div className="relative h-[600px] overflow-hidden bg-gray-100">
         {/* Background Image */}
         <div className="absolute inset-2">
@@ -216,7 +216,6 @@ export default function BlogPage() {
           </div>
         )}
       </div>
-
       {/* Blog Section */}
       <div className="py-16">
         
@@ -237,115 +236,78 @@ export default function BlogPage() {
               placeholder="Search articles..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-base"
+              className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-base"
             />
           </div>
         </div>
 
-        {/* Filters and Sort */}
-        <div className="px-6 flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 space-y-4 lg:space-y-0">
-          
-          {/* Category Filters */}
-          <div className="flex flex-wrap gap-2">
-            {BLOG_CATEGORIES.map((category) => (
-              <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  selectedCategory === category
-                    ? 'bg-violet-600 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
-
-          {/* Sort Dropdown */}
-          <div className="relative">
+        {/* Category Filters */}
+        <div className="px-6 flex flex-wrap gap-3 mb-12">
+          {BLOG_CATEGORIES.map((category) => (
             <button
-              onClick={() => setShowSortDropdown(!showSortDropdown)}
-              className="flex items-center space-x-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-200 transition-colors"
+              key={category}
+              onClick={() => {
+                setSelectedCategory(category)
+                console.log('Selected category:', category)
+              }}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                selectedCategory === category
+                  ? 'bg-gray-900 text-white'
+                  : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+              }`}
             >
-              <span className="text-sm font-medium">Sort by: {sortBy}</span>
-              <ChevronDown className="w-4 h-4" />
+              {category}
             </button>
-            
-            {showSortDropdown && (
-              <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-10">
-                {sortOptions.map((option) => (
-                  <button
-                    key={option}
-                    onClick={() => {
-                      setSortBy(option)
-                      setShowSortDropdown(false)
-                    }}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 first:rounded-t-md last:rounded-b-md font-medium"
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          ))}
         </div>
 
-                {/* Blog Posts Grid */}
+        {/* Blog Posts Grid with Fixed Image Fitting */}
         <div className="px-6">
           {blogsLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div key={i} className="animate-pulse">
-                  <div className="bg-gray-200 aspect-square rounded-lg"></div>
+                  <div className="bg-gray-200 h-48 rounded-xl mb-4"></div>
+                  <div className="bg-gray-200 h-4 rounded mb-2"></div>
+                  <div className="bg-gray-200 h-3 rounded w-3/4"></div>
                 </div>
               ))}
             </div>
           ) : filteredBlogs.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredBlogs.map((blog) => (
                 <Link key={blog.id} href={`/blog/${blog.slug}`}>
-                  <article className="group cursor-pointer">
+                  <article className="group cursor-pointer bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300">
                     
-                    {/* Square Blog Image with Text Overlay */}
-                    <div className="relative aspect-square overflow-hidden rounded-lg">
+                    {/* Blog Image - Fixed Fitting */}
+                    <div className="relative h-48 overflow-hidden">
                       <img
                         src={blog.cover_image}
                         alt={blog.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
+                        style={{ objectFit: 'cover' }}
                       />
-                      
-                      {/* Content Overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent p-6 flex flex-col justify-between">
-                        
-                        {/* Category */}
-                        <div className="flex justify-start">
-                          <span className="bg-white/20 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-medium">
-                            {blog.category}
-                          </span>
-                        </div>
+                      <div className="absolute top-4 left-4">
+                        <span className="bg-white/90 backdrop-blur-sm text-gray-900 px-3 py-1 rounded-full text-xs font-medium">
+                          {blog.category}
+                        </span>
+                      </div>
+                    </div>
 
-                        {/* Blog Info */}
-                        <div>
-                          <h3 className="text-white font-semibold text-lg mb-2 group-hover:text-yellow-200 transition-colors line-clamp-2">
-                            {blog.title}
-                          </h3>
-                          <p className="text-white/90 text-sm leading-relaxed line-clamp-3 mb-3">
-                            {blog.excerpt}
-                          </p>
-                          
-                          {/* Post Meta */}
-                          <div className="flex items-center justify-between text-xs text-white/70">
-                            <div className="flex items-center space-x-2">
-                              <User className="w-3 h-3" />
-                              <span>{blog.author_name}</span>
-                            </div>
-                            <div className="flex items-center space-x-1">
-                              <Calendar className="w-3 h-3" />
-                              <span>{formatDate(blog.created_at)}</span>
-                            </div>
-                          </div>
-                        </div>
+                    {/* Blog Content */}
+                    <div className="p-6">
+                      <h3 className="text-xl font-semibold text-gray-900 mb-3 line-clamp-2 group-hover:text-violet-600 transition-colors">
+                        {blog.title}
+                      </h3>
+                      
+                      <p className="text-gray-600 leading-relaxed mb-4 line-clamp-3 text-sm">
+                        {blog.excerpt}
+                      </p>
+
+                      {/* Meta Info */}
+                      <div className="flex items-center justify-between text-xs text-gray-500">
+                        <span>{formatDate(blog.created_at)}</span>
+                        <span>{calculateReadTime(blog.content)} min read</span>
                       </div>
                     </div>
                   </article>
@@ -359,7 +321,6 @@ export default function BlogPage() {
             </div>
           )}
         </div>
-
       </div>
 
       <Footer />
