@@ -96,7 +96,7 @@ export default function ProductsPage() {
             
             {/* Logo */}
             <div className="flex items-center">
-              <span className="text-xl font-bold text-gray-900">PsycAi</span>
+              <img src="/psycai-logo.png" alt="PsycAi Logo" className="h-8 w-auto" />
             </div>
 
             {/* Centered Navigation Links */}

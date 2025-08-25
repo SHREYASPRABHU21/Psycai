@@ -76,7 +76,7 @@ export default function UserProfile() {
           <img
             src={profileImage}
             alt={displayName}
-            className="w-8 h-8 rounded-full object-cover border-2 border-white/20"
+            className="w-10 h-10 rounded-full object-cover border-2 border-white/20"
             onLoad={() => console.log('Image loaded successfully')}
             onError={(e) => {
               console.log('Image failed to load:', profileImage)

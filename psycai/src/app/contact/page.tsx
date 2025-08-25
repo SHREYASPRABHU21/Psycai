@@ -95,8 +95,7 @@ export default function ContactPage() {
             
             {/* Logo */}
             <div className="flex items-center">
-              <span className="text-xl font-bold text-gray-900">PsycAi</span>
-            </div>
+<img src="/psycai-logo.png" alt="PsycAi Logo" className="h-20 w-auto" />            </div>
 
             {/* Centered Navigation Links */}
             <nav className="absolute left-1/2 transform -translate-x-1/2 hidden md:flex items-center space-x-8">
@@ -173,11 +172,10 @@ export default function ContactPage() {
                 
                 {/* Logo */}
                 <div className="flex items-center mb-8">
-                  <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center mr-3">
-                    <div className="w-4 h-4 bg-white rounded"></div>
-                  </div>
-                  <span className="text-xl font-bold text-gray-900">PsycAi</span>
-                </div>
+  <img src="/psycai-logo.png" alt="PsycAi Logo" className="h-8 w-auto" />
+</div>
+
+
 
                 <div className="mb-8">
                   <h1 className="text-4xl font-bold text-gray-900 mb-2 leading-tight">

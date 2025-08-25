@@ -11,14 +11,52 @@ const inter = Inter({
 });
 
 export const metadata = {
-  title: 'PsycAi - AI Products Hub',
-  description: 'Discover and explore the best AI applications to boost your productivity and creativity',
+  title: 'PsycAi – Pixels, Neurons, Chaos',
+  description: 'Dive into the chaotic playground of AI. PsycAi experiments with algorithms, pixels, and neurons to create wild, unpredictable, and mind-bending AI tools. Creativity has no rules here.',
+  keywords: [
+    'AI tools',
+    'creative AI',
+    'PsycAi',
+    'AI experiments',
+    'AI creativity',
+    'neurons and pixels',
+    'AI playground',
+    'chaotic AI'
+  ],
+  authors: [{ name: 'Shreyas Prabhu', url: 'https://www.psycai.site' }],
+  creator: 'Shreyas Prabhu',
+  themeColor: '#111827', // dark theme color for Chrome UI
+  colorScheme: 'dark',
+  openGraph: {
+    title: 'PsycAi – Pixels, Neurons, Chaos',
+    description: 'Dive into the chaotic playground of AI. PsycAi experiments with algorithms, pixels, and neurons to create wild, unpredictable, and mind-bending AI tools.',
+    url: 'https://www.psycai.site',
+    siteName: 'PsycAi',
+    images: [
+      {
+        url: '/opengraph-image.png', 
+        width: 1200,
+        height: 630,
+        alt: 'PsycAi – Creative AI Tools',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'PsycAi – Pixels, Neurons, Chaos',
+    description: 'Dive into the chaotic playground of AI. PsycAi experiments with algorithms, pixels, and neurons to create wild and mind-bending AI tools.',
+    creator: '@shreyasprabhu',
+    images: ['/opengraph-image.png'],
+  },
   icons: {
     icon: '/favicon.ico',
     shortcut: '/favicon.ico',
-    apple: '/favicon.ico',
+    apple: '/favicon-32x32.png',
   },
 };
+
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

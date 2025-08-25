@@ -127,56 +127,53 @@ export default function BlogPage() {
         {/* Navigation Bar Overlay */}
                 {/* Navigation Bar Overlay */}
         <header className="relative z-20">
-          <div className="px-6">
-            <div className="flex justify-between items-center py-5">
-              
-              {/* Logo */}
-              <div className="flex items-center">
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                    <div className="w-4 h-4 bg-violet-600 rounded"></div>
-                  </div>
-                  <span className="text-xl font-medium text-white tracking-wide">PsycAi</span>
-                </div>
-              </div>
+  <div className="px-6">
+    <div className="flex justify-between items-center h-20"> {/* fixed height */}
+      
+      {/* Logo */}
+      <div className="flex items-center">
+        <div className="flex items-center space-x-3">
+          <img src="/psycai-logo.png" alt="PsycAi Logo" className="h-8 w-auto" /> {/* smaller than navbar */}
+        </div>
+      </div>
 
-              {/* Centered Navigation Links */}
-              <nav className="absolute left-1/2 transform -translate-x-1/2 hidden lg:flex items-center space-x-8">
-                <Link href="/" className="text-white/90 hover:text-white transition-colors font-normal">Home</Link>
-                <Link href="/products" className="text-white/90 hover:text-white transition-colors font-normal">Products</Link>
-                <Link href="/blog" className="text-white hover:text-white transition-colors font-medium">Blog</Link>
-                <Link href="/contact" className="text-white/90 hover:text-white transition-colors font-normal">Contact</Link>
-              </nav>
+      {/* Centered Navigation Links */}
+      <nav className="absolute left-1/2 transform -translate-x-1/2 hidden lg:flex items-center space-x-8">
+        <Link href="/" className="text-white/90 hover:text-white transition-colors font-normal">Home</Link>
+        <Link href="/products" className="text-white/90 hover:text-white transition-colors font-normal">Products</Link>
+        <Link href="/blog" className="text-white hover:text-white transition-colors font-medium">Blog</Link>
+        <Link href="/contact" className="text-white/90 hover:text-white transition-colors font-normal">Contact</Link>
+      </nav>
 
-              {/* User Actions */}
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-1 text-white/80">
-                  <Globe className="w-4 h-4" />
-                  <span className="text-sm font-medium">EN</span>
-                </div>
+      {/* User Actions */}
+      <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-1 text-white/80">
+          <Globe className="w-4 h-4" />
+          <span className="text-sm font-medium">EN</span>
+        </div>
 
-                {user ? (
-                  <UserProfile />
-                ) : (
-                  <div className="flex items-center space-x-3">
-                    <button 
-                      onClick={() => router.push('/login')}
-                      className="text-white/90 hover:text-white transition-colors font-medium"
-                    >
-                      Log In
-                    </button>
-                    <button 
-                      onClick={() => router.push('/signup')}
-                      className="bg-white text-gray-900 px-5 py-2.5 rounded-lg font-medium hover:bg-white/90 transition-colors"
-                    >
-                      Sign Up
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
+        {user ? (
+          <UserProfile />
+        ) : (
+          <div className="flex items-center space-x-3">
+            <button 
+              onClick={() => router.push('/login')}
+              className="text-white/90 hover:text-white transition-colors font-medium"
+            >
+              Log In
+            </button>
+            <button 
+              onClick={() => router.push('/signup')}
+              className="bg-white text-gray-900 px-5 py-2.5 rounded-lg font-medium hover:bg-white/90 transition-colors"
+            >
+              Sign Up
+            </button>
           </div>
-        </header>
+        )}
+      </div>
+    </div>
+  </div>
+</header>
 
 
         {/* Hero Content */}

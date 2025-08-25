@@ -70,7 +70,7 @@ export default function HomePage() {
           <div className="flex justify-between items-center">
             {/* Text logo aligned with content */}
             <Link href="/" className="text-3xl font-extrabold tracking-wide text-white hover:text-violet-300 transition-colors">
-              PsycAi
+              <img src="/psycai-logo.png" alt="PsycAi Logo" className="h-8 w-auto" />
             </Link>
 
             {/* Centered Navigation Links */}

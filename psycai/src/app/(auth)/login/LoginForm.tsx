@@ -74,10 +74,9 @@ export default function LoginForm({ redirectTo }: LoginFormProps) {
         <div className="w-full max-w-md">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-black rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
-                <div className="w-2 h-2 bg-black rounded-full"></div>
-              </div>
+            <div className="flex items-center justify-center mx-auto mb-6">
+              <div className="flex items-center justify-center">
+<img src="/psycai-logo.png" alt="PsycAi Logo" className="h-10 w-auto" />              </div>
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h1>
             <p className="text-gray-600">Continue your AI journey where you left off.</p>

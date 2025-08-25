@@ -43,7 +43,7 @@ export default function Footer() {
           {/* Brand Section */}
           <div className="lg:col-span-5 space-y-4">
             <Link href="/" className="text-2xl font-bold text-white hover:text-violet-300 transition-colors">
-              PsycAi
+               <img src="/psycai-logo.png" alt="PsycAi Logo" className="h-8 w-auto" />
             </Link>
             
             <p className="text-gray-400 leading-relaxed max-w-md">
@@ -131,7 +131,7 @@ export default function Footer() {
         <div className="border-t border-gray-800 pt-6 mt-8">
           <div className="flex flex-col lg:flex-row justify-between items-center space-y-3 lg:space-y-0">
             <div className="flex items-center space-x-4 text-sm text-gray-500">
-              <span>© {currentYear} PsycAi</span>
+               <img src="/psycai-logo.png" alt="PsycAi Logo" className="h-6 w-auto" />
               <Link href="/privacy" className="hover:text-violet-400 transition-colors">Privacy</Link>
               <Link href="/terms" className="hover:text-violet-400 transition-colors">Terms</Link>
             </div>
