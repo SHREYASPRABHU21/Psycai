@@ -11,7 +11,7 @@ const inter = Inter({
 });
 
 export const metadata = {
-  title: 'PsycAi – Pixels, Neurons, Chaos',
+  title: 'PsycAi',
   description: 'Dive into the chaotic playground of AI. PsycAi experiments with algorithms, pixels, and neurons to create wild, unpredictable, and mind-bending AI tools. Creativity has no rules here.',
   keywords: [
     'AI tools',
@@ -21,7 +21,9 @@ export const metadata = {
     'AI creativity',
     'neurons and pixels',
     'AI playground',
-    'chaotic AI'
+    'chaotic AI',
+    'AI products',
+    'AI tools'
   ],
   authors: [{ name: 'Shreyas Prabhu', url: 'https://www.psycai.site' }],
   creator: 'Shreyas Prabhu',
