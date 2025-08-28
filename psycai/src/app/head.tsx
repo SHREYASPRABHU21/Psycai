@@ -15,6 +15,7 @@ export default function Head() {
       
       {/* You can add meta tags for theme color etc. if needed */}
       <meta name="theme-color" content="#111827" />
+      <meta name="google-adsense-account" content="ca-pub-1416332355827930"></meta>
     </>
   );
 }

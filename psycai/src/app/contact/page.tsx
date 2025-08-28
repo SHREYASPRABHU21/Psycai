@@ -7,6 +7,7 @@ import UserProfile from '@/components/auth/UserProfile'
 import Footer from '@/components/layout/Footer'
 import { ChevronLeft, ChevronRight, Send, Globe } from 'lucide-react'
 import Link from 'next/link'
+import { submitContactMessage } from '@/lib/supabase-user'
 
 const quotes = [
   {
@@ -49,21 +50,53 @@ export default function ContactPage() {
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-    
-    // Simulate form submission
-    setTimeout(() => {
-      setIsSubmitting(false)
+  e.preventDefault()
+  
+  if (!formData.firstName || !formData.lastName || !formData.email || !formData.message) {
+    alert('Please fill in all required fields')
+    return
+  }
+
+  setIsSubmitting(true)
+
+  try {
+    console.log('Submitting contact form with data:', {
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email,
+      messageLength: formData.message.length,
+      userId: user?.uid
+    })
+
+    const success = await submitContactMessage({
+      first_name: formData.firstName,
+      last_name: formData.lastName,
+      email: formData.email,
+      message: formData.message,
+      user_id: user?.uid
+    })
+
+    if (success) {
+      console.log('Contact message submitted successfully')
       setSubmitted(true)
       setFormData({ firstName: '', lastName: '', email: '', message: '' })
       
-      // Reset success message after 3 seconds
+      // Reset success message after 5 seconds
       setTimeout(() => {
         setSubmitted(false)
-      }, 3000)
-    }, 1000)
+      }, 5000)
+    } else {
+      console.error('Failed to submit contact message')
+      alert('Failed to send message. Please try again.')
+    }
+  } catch (error) {
+    console.error('Contact form submission error:', error)
+    alert('Failed to send message. Please try again.')
   }
+
+  setIsSubmitting(false)
+}
+
 
   const nextQuote = () => {
     setCurrentQuote((prev) => (prev + 1) % quotes.length)
@@ -95,7 +128,8 @@ export default function ContactPage() {
             
             {/* Logo */}
             <div className="flex items-center">
-<img src="/psycai-logo.png" alt="PsycAi Logo" className="h-20 w-auto" />            </div>
+              <span className="text-xl font-bold text-gray-900">PsycAi</span>
+            </div>
 
             {/* Centered Navigation Links */}
             <nav className="absolute left-1/2 transform -translate-x-1/2 hidden md:flex items-center space-x-8">
@@ -107,10 +141,7 @@ export default function ContactPage() {
 
             {/* User Profile */}
             <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-1 text-gray-600">
-                <Globe className="w-4 h-4" />
-                <span className="text-sm font-medium">EN</span>
-              </div>
+              
               {user && <UserProfile />}
             </div>
           </div>
@@ -130,7 +161,7 @@ export default function ContactPage() {
                 <div className="flex-1 flex items-center justify-center mb-8">
                   <div className="relative">
                     <img
-                      src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&h=400&fit=crop&crop=center"
+                      src="https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400&h=400&fit=crop&crop=center"
                       alt="AI Innovation"
                       className="w-64 h-64 object-cover rounded-2xl shadow-2xl"
                     />
@@ -172,10 +203,11 @@ export default function ContactPage() {
                 
                 {/* Logo */}
                 <div className="flex items-center mb-8">
-  <img src="/psycai-logo.png" alt="PsycAi Logo" className="h-8 w-auto" />
-</div>
-
-
+                  <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center mr-3">
+                    <div className="w-4 h-4 bg-white rounded"></div>
+                  </div>
+                  <span className="text-xl font-bold text-gray-900">PsycAi</span>
+                </div>
 
                 <div className="mb-8">
                   <h1 className="text-4xl font-bold text-gray-900 mb-2 leading-tight">
@@ -212,6 +244,7 @@ export default function ContactPage() {
                           placeholder="First Name"
                           className="w-full px-4 py-3 bg-gray-50 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 text-gray-900 placeholder-gray-500"
                           required
+                          disabled={isSubmitting}
                         />
                       </div>
                       
@@ -227,6 +260,7 @@ export default function ContactPage() {
                           placeholder="Last name"
                           className="w-full px-4 py-3 bg-gray-50 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 text-gray-900 placeholder-gray-500"
                           required
+                          disabled={isSubmitting}
                         />
                       </div>
                     </div>
@@ -243,6 +277,7 @@ export default function ContactPage() {
                         placeholder="Email address"
                         className="w-full px-4 py-3 bg-gray-50 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 text-gray-900 placeholder-gray-500"
                         required
+                        disabled={isSubmitting}
                       />
                     </div>
 
@@ -258,6 +293,7 @@ export default function ContactPage() {
                         placeholder="Tell us about your project or ask any questions..."
                         className="w-full px-4 py-3 bg-gray-50 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 text-gray-900 placeholder-gray-500"
                         required
+                        disabled={isSubmitting}
                       />
                     </div>
 

@@ -13,6 +13,7 @@ import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore'
 import { auth, googleProvider, db } from '@/lib/firebase'
 import { User } from 'firebase/auth'
 import { trackSignup, trackLogin, setAnalyticsUser } from '@/lib/analytics'
+import { storeUser } from '@/lib/supabase-user'
 
 interface UserData {
   uid: string
@@ -53,6 +54,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Function to store user data in Supabase
+  // Function to store user data in Supabase
+const handleUserLogin = async (firebaseUser: User) => {
+  try {
+    console.log('Storing user in Supabase:', {
+      uid: firebaseUser.uid,
+      email: firebaseUser.email,
+      displayName: firebaseUser.displayName
+    })
+    
+    const success = await storeUser({
+      firebase_uid: firebaseUser.uid,
+      name: firebaseUser.displayName || '',
+      email: firebaseUser.email || '',
+      photo_url: firebaseUser.photoURL || undefined
+    })
+    
+    if (success) {
+      console.log('User data stored in Supabase successfully')
+    } else {
+      console.error('Failed to store user data in Supabase')
+    }
+  } catch (error) {
+    console.error('Error storing user in Supabase:', error)
+    // Don't throw error here - Firebase auth should still work even if Supabase fails
+  }
+}
+
   useEffect(() => {
     console.log('Auth Context: Setting up listener...')
     
@@ -62,6 +91,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (firebaseUser) {
         setUser(firebaseUser)
         await fetchUserData(firebaseUser.uid)
+        // Store user data in Supabase
+        await handleUserLogin(firebaseUser)
       } else {
         setUser(null)
         setUserData(null)

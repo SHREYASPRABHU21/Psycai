@@ -1,147 +1,221 @@
-import Navbar from '@/components/layout/Navigation'
 import Footer from '@/components/layout/Footer'
+import Link from 'next/link'
 
-export default function TermsPage() {
+export default function TermsOfServicePage() {
+  const lastUpdated = "December 15, 2024"
+  const effectiveDate = "January 1, 2025"
+
   return (
     <div className="min-h-screen bg-white">
-      <Navbar />
+      {/* Header */}
+      <div className="bg-gray-50 border-b border-gray-200">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center">
+            <Link href="/" className="inline-block mb-6">
+              <span className="text-2xl font-bold text-gray-900">PsycAi</span>
+            </Link>
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">Terms of Service</h1>
+            <p className="text-gray-600">Last updated: {lastUpdated}</p>
+            <p className="text-gray-600">Effective date: {effectiveDate}</p>
+          </div>
+        </div>
+      </div>
       
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="prose prose-lg max-w-none">
-          <h1 className="text-4xl font-bold text-gray-900 mb-8">Terms and Conditions</h1>
-          <p className="text-gray-600 mb-8">Last updated: {new Date().toLocaleDateString()}</p>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Introduction</h2>
-            <p className="text-gray-700 leading-relaxed">
-              Welcome to PsycAi ("we," "our," or "us"). These Terms and Conditions ("Terms") govern your use of our website located at psycai.site (the "Service") operated by PsycAi. By accessing or using our Service, you agree to be bound by these Terms. If you disagree with any part of these terms, then you may not access the Service.
+          {/* Table of Contents */}
+          <div className="bg-gray-50 rounded-lg p-6 mb-12">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4 mt-0">Table of Contents</h2>
+            <ol className="list-decimal list-inside text-gray-700 space-y-1 text-sm">
+              <li><a href="#acceptance" className="text-violet-600 hover:text-violet-700">Acceptance of Terms</a></li>
+              <li><a href="#description" className="text-violet-600 hover:text-violet-700">Description of Services</a></li>
+              <li><a href="#eligibility" className="text-violet-600 hover:text-violet-700">Eligibility</a></li>
+              <li><a href="#accounts" className="text-violet-600 hover:text-violet-700">User Accounts</a></li>
+              <li><a href="#acceptable-use" className="text-violet-600 hover:text-violet-700">Acceptable Use Policy</a></li>
+              <li><a href="#prohibited-uses" className="text-violet-600 hover:text-violet-700">Prohibited Uses</a></li>
+              <li><a href="#content" className="text-violet-600 hover:text-violet-700">User-Generated Content</a></li>
+              <li><a href="#intellectual-property" className="text-violet-600 hover:text-violet-700">Intellectual Property Rights</a></li>
+              <li><a href="#third-party" className="text-violet-600 hover:text-violet-700">Third-Party Services</a></li>
+              <li><a href="#privacy" className="text-violet-600 hover:text-violet-700">Privacy Policy</a></li>
+              <li><a href="#payments" className="text-violet-600 hover:text-violet-700">Payments and Billing</a></li>
+              <li><a href="#disclaimers" className="text-violet-600 hover:text-violet-700">Disclaimers</a></li>
+              <li><a href="#limitation" className="text-violet-600 hover:text-violet-700">Limitation of Liability</a></li>
+              <li><a href="#indemnification" className="text-violet-600 hover:text-violet-700">Indemnification</a></li>
+              <li><a href="#termination" className="text-violet-600 hover:text-violet-700">Termination</a></li>
+              <li><a href="#governing-law" className="text-violet-600 hover:text-violet-700">Governing Law</a></li>
+              <li><a href="#dispute-resolution" className="text-violet-600 hover:text-violet-700">Dispute Resolution</a></li>
+              <li><a href="#changes" className="text-violet-600 hover:text-violet-700">Changes to Terms</a></li>
+              <li><a href="#contact" className="text-violet-600 hover:text-violet-700">Contact Information</a></li>
+            </ol>
+          </div>
+
+          <section id="acceptance" className="mb-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">1. Acceptance of Terms</h2>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              Welcome to PsycAi ("we," "our," or "us"). These Terms of Service ("Terms") govern your use of our website located at <a href="https://psycai.site" className="text-violet-600 hover:text-violet-700">psycai.site</a> (the "Service") operated by PsycAi.
+            </p>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              By accessing or using our Service, you agree to be bound by these Terms. If you disagree with any part of these terms, then you may not access the Service.
             </p>
           </section>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Acceptance of Terms</h2>
-            <p className="text-gray-700 leading-relaxed">
-              By accessing and using PsycAi, you accept and agree to be bound by the terms and provision of this agreement. Additionally, when using PsycAi's specific services, you shall be subject to any posted guidelines or rules applicable to such services.
-            </p>
-          </section>
-
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Description of Service</h2>
+          <section id="description" className="mb-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">2. Description of Services</h2>
             <p className="text-gray-700 leading-relaxed mb-4">
               PsycAi is a platform that provides:
             </p>
-            <ul className="list-disc pl-6 text-gray-700 space-y-2">
-              <li>Curated directory of AI products and applications</li>
-              <li>Reviews and ratings of AI tools</li>
-              <li>Educational content about artificial intelligence</li>
-              <li>Blog articles and insights about AI trends</li>
-              <li>User accounts and personalized recommendations</li>
-              <li>Links to third-party AI services and products</li>
+            <ul className="list-disc pl-6 text-gray-700 space-y-2 mb-6">
+              <li>Discovery and curation of AI-powered tools and applications</li>
+              <li>Reviews, ratings, and recommendations for AI products</li>
+              <li>Educational content, blogs, and resources about AI technology</li>
+              <li>User accounts for personalized experiences</li>
+              <li>Newsletter and communication services</li>
+              <li>Contact and customer support services</li>
             </ul>
           </section>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">User Accounts</h2>
+          <section id="eligibility" className="mb-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">3. Eligibility</h2>
+            <p className="text-gray-700 leading-relaxed">
+              To use our Service, you must be at least 13 years old and have legal capacity to enter into contracts. You confirm that you meet these requirements.
+            </p>
+          </section>
+
+          <section id="accounts" className="mb-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">4. User Accounts</h2>
             <p className="text-gray-700 leading-relaxed mb-4">
-              When you create an account with us, you must provide information that is accurate, complete, and current at all times. You are responsible for:
+              Users may create accounts to access personalized features. You are responsible for maintaining the confidentiality of your credentials and all activities under your account.
+            </p>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              You must notify us immediately of unauthorized use of your account. PsycAi is not responsible for any losses caused by unauthorized use.
+            </p>
+          </section>
+
+          <section id="acceptable-use" className="mb-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">5. Acceptable Use Policy</h2>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              You agree to use PsycAi responsibly and lawfully. Prohibited activities include but are not limited to:
             </p>
             <ul className="list-disc pl-6 text-gray-700 space-y-2">
-              <li>Safeguarding the password and all activities under your account</li>
-              <li>Notifying us immediately of any unauthorized use of your account</li>
-              <li>Ensuring your account information remains accurate and up-to-date</li>
-              <li>Maintaining the security of your login credentials</li>
+              <li>Illegal activities</li>
+              <li>Violations of intellectual property rights</li>
+              <li>Harassment, abuse, or harm</li>
+              <li>Distribution of malware or harmful code</li>
+              <li>Attempts to breach security</li>
             </ul>
           </section>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Acceptable Use Policy</h2>
+          <section id="user-content" className="mb-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">6. User-Generated Content</h2>
             <p className="text-gray-700 leading-relaxed mb-4">
-              You agree not to use the Service:
-            </p>
-            <ul className="list-disc pl-6 text-gray-700 space-y-2">
-              <li>For any unlawful purpose or to solicit others to perform unlawful acts</li>
-              <li>To violate any international, federal, provincial, or state regulations, rules, laws, or local ordinances</li>
-              <li>To infringe upon or violate our intellectual property rights or the intellectual property rights of others</li>
-              <li>To harass, abuse, insult, harm, defame, slander, disparage, intimidate, or discriminate</li>
-              <li>To submit false or misleading information</li>
-              <li>To upload or transmit viruses or any other type of malicious code</li>
-              <li>To spam, phish, pharm, pretext, spider, crawl, or scrape</li>
-              <li>For any obscene or immoral purpose</li>
-            </ul>
-          </section>
-
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Third-Party Services</h2>
-            <p className="text-gray-700 leading-relaxed">
-              Our Service may contain links to third-party AI products, websites, or services that are not owned or controlled by PsycAi. We have no control over, and assume no responsibility for, the content, privacy policies, or practices of any third-party websites or services. You acknowledge and agree that PsycAi shall not be responsible or liable for any damage or loss caused by your use of any such content, goods, or services available on third-party websites.
+              By posting or sharing content, you grant PsycAi a license to use, modify, and distribute it. You are responsible for the legality and appropriateness of your content.
             </p>
           </section>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Intellectual Property Rights</h2>
+          <section id="intellectual-property" className="mb-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">7. Intellectual Property Rights</h2>
             <p className="text-gray-700 leading-relaxed mb-4">
-              The Service and its original content, features, and functionality are and will remain the exclusive property of PsycAi and its licensors. The Service is protected by copyright, trademark, and other laws. Our trademarks and trade dress may not be used in connection with any product or service without our prior written consent.
-            </p>
-            <p className="text-gray-700 leading-relaxed">
-              You retain rights to any content you submit, post, or display on or through the Service. By posting content, you grant us a worldwide, non-exclusive, royalty-free license to use, copy, reproduce, process, adapt, modify, publish, transmit, display, and distribute such content.
+              All content, trademarks, and technology on PsycAi are owned or licensed by us. Unauthorized use is prohibited.
             </p>
           </section>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Privacy Policy</h2>
-            <p className="text-gray-700 leading-relaxed">
-              Your privacy is important to us. Our Privacy Policy explains how we collect, use, and protect your information when you use our Service. By using our Service, you agree to the collection and use of information in accordance with our Privacy Policy.
+          <section id="third-party" className="mb-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">8. Third-Party Services</h2>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              PsycAi may link to or integrate third-party services. We are not responsible for their content or privacy practices.
             </p>
           </section>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Disclaimer of Warranties</h2>
-            <p className="text-gray-700 leading-relaxed">
-              The information on this Service is provided on an "as is" basis. To the fullest extent permitted by law, this Company excludes all representations, warranties, conditions, and terms whether express, implied, statutory, or otherwise, including but not limited to the implied warranties of merchantability, fitness for a particular purpose, and non-infringement.
+          <section id="privacy" className="mb-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">9. Privacy Policy</h2>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              Our Privacy Policy explains how we collect and handle your personal information. Please review it carefully.
+            </p>
+            <Link href="/privacy" className="text-violet-600 hover:text-violet-700">Read our Privacy Policy</Link>
+          </section>
+
+          <section id="payments" className="mb-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">10. Payments and Billing</h2>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              If applicable, payment terms will be described when you purchase services. All payments are non-refundable unless stated otherwise.
             </p>
           </section>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Limitation of Liability</h2>
-            <p className="text-gray-700 leading-relaxed">
-              In no event shall PsycAi, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your use of the Service.
+          <section id="disclaimers" className="mb-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">11. Disclaimers</h2>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              The Service is provided "as is" without warranties of any kind. We disclaim all warranties, express or implied, including fitness for a particular purpose.
             </p>
           </section>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Termination</h2>
-            <p className="text-gray-700 leading-relaxed">
-              We may terminate or suspend your account and bar access to the Service immediately, without prior notice or liability, under our sole discretion, for any reason whatsoever, including without limitation if you breach the Terms. Upon termination, your right to use the Service will cease immediately.
+          <section id="limitation" className="mb-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">12. Limitation of Liability</h2>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              PsycAi shall not be liable for any direct, indirect, incidental, or consequential damages arising from your use or inability to use the Service.
             </p>
           </section>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Changes to Terms</h2>
-            <p className="text-gray-700 leading-relaxed">
-              We reserve the right, at our sole discretion, to modify or replace these Terms at any time. If a revision is material, we will try to provide at least 30 days' notice prior to any new terms taking effect. What constitutes a material change will be determined at our sole discretion.
+          <section id="indemnification" className="mb-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">13. Indemnification</h2>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              You agree to indemnify and hold harmless PsycAi and its affiliates from any claims, damages, or expenses arising from your violation of these Terms or misuse of the Service.
             </p>
           </section>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Governing Law</h2>
-            <p className="text-gray-700 leading-relaxed">
-              These Terms shall be interpreted and governed by the laws of the jurisdiction in which PsycAi operates, without regard to its conflict of law provisions. Our failure to enforce any right or provision of these Terms will not be considered a waiver of those rights.
+          <section id="termination" className="mb-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">14. Termination</h2>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              We may terminate or suspend your account or access to the Service at our discretion for violation of these Terms or other reasons.
             </p>
           </section>
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Contact Information</h2>
-            <p className="text-gray-700 leading-relaxed">
-              If you have any questions about these Terms and Conditions, please contact us at:
+          <section id="governing-law" className="mb-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">15. Governing Law</h2>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              These Terms shall be governed by and construed in accordance with the laws of the jurisdiction where PsycAi is established, without regard to conflict of law principles.
             </p>
-            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-              <p className="text-gray-700">
-                <strong>Email:</strong> legal@psycai.site<br/>
-                <strong>Address:</strong> PsycAi Legal Team<br/>
-                <strong>Website:</strong> <a href="/contact" className="text-violet-600 hover:text-violet-700">Contact Form</a>
+          </section>
+
+          <section id="dispute-resolution" className="mb-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">16. Dispute Resolution</h2>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              Any disputes arising under these Terms shall be resolved through binding arbitration or through the courts of competent jurisdiction as applicable.
+            </p>
+          </section>
+
+          <section id="changes" className="mb-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">17. Changes to Terms</h2>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              We reserve the right to update or change these Terms at any time. Any changes will be posted here with an updated effective date. Your continued use of the Service indicates acceptance of those changes.
+            </p>
+          </section>
+
+          <section id="contact" className="mb-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">18. Contact Information</h2>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              If you have any questions about these Terms, please contact us:
+            </p>
+            <div className="bg-gray-50 rounded-lg p-6">
+              <p className="text-gray-700 text-sm">
+                <strong>Email:</strong> <a href="mailto:support@psycai.site" className="text-violet-600 hover:text-violet-700">support@psycai.site</a><br />
+                <strong>Address:</strong> PsycAi Support Team<br />
+                <strong>Website:</strong> <Link href="/contact" className="text-violet-600 hover:text-violet-700">Contact Form</Link>
               </p>
             </div>
           </section>
+
+          {/* Footer */}
+          <div className="border-t pt-8 mt-12">
+            <div className="text-center text-gray-500 text-sm">
+              <p>© 2024 PsycAi. All rights reserved.</p>
+              <p className="mt-2">
+                <Link href="/privacy" className="text-violet-600 hover:text-violet-700 mr-4">Privacy Policy</Link>
+                <Link href="/contact" className="text-violet-600 hover:text-violet-700">Contact Us</Link>
+              </p>
+            </div>
+          </div>
+
         </div>
       </div>
       

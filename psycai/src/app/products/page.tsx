@@ -109,10 +109,7 @@ export default function ProductsPage() {
 
             {/* User Profile */}
             <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-1 text-gray-600">
-                <Globe className="w-4 h-4" />
-                <span className="text-sm font-medium">EN</span>
-              </div>
+            
               {user && <UserProfile />}
             </div>
           </div>
