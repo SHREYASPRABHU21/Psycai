@@ -63,6 +63,10 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={inter.variable}>
+      <head>
+              <meta name="google-adsense-account" content="ca-pub-1416332355827930"></meta>
+
+      </head>
       <body className={inter.variable}>
         <AuthProvider>
           {children}
