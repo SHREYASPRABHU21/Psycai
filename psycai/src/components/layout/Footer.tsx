@@ -75,7 +75,7 @@ export default function Footer() {
           {/* Brand Section */}
           <div className="lg:col-span-5 space-y-4">
             <Link href="/" className="text-2xl font-bold text-white hover:text-violet-300 transition-colors">
-              PsycAi
+              <img src="/psycai-logo.png" alt="PsycAi Logo" className="h-8 w-auto" /> 
             </Link>
             
             <p className="text-gray-400 leading-relaxed max-w-md">

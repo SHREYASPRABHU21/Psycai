@@ -128,7 +128,7 @@ export default function ContactPage() {
             
             {/* Logo */}
             <div className="flex items-center">
-              <span className="text-xl font-bold text-gray-900">PsycAi</span>
+              <img src="/psycai-logo.png" alt="PsycAi Logo" className="h-8 w-auto" /> 
             </div>
 
             {/* Centered Navigation Links */}
@@ -161,7 +161,7 @@ export default function ContactPage() {
                 <div className="flex-1 flex items-center justify-center mb-8">
                   <div className="relative">
                     <img
-                      src="https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400&h=400&fit=crop&crop=center"
+                      src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&h=400&fit=crop&crop=center"
                       alt="AI Innovation"
                       className="w-64 h-64 object-cover rounded-2xl shadow-2xl"
                     />
@@ -203,10 +203,8 @@ export default function ContactPage() {
                 
                 {/* Logo */}
                 <div className="flex items-center mb-8">
-                  <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center mr-3">
-                    <div className="w-4 h-4 bg-white rounded"></div>
-                  </div>
-                  <span className="text-xl font-bold text-gray-900">PsycAi</span>
+                  
+                  <img src="/psycai-logo.png" alt="PsycAi Logo" className="h-8 w-auto" /> 
                 </div>
 
                 <div className="mb-8">
